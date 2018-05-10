@@ -1,2 +1,114 @@
-\chapter{Introduction}
+% \chapter{Introduction}
+
+\iffalse Brief outline of the chapter below
+
+Background:
+	What is HH equation?
+	What does it model?
+	How is it derived?
+	Boundary conditions
+	- 	Sommerfield radiation condition
+	
+Finite element method:
+	Discretisation of HH
+	Discretisation of infinite domains
+		D,N,radiation
+	ABC, DtN, PML
+
+Linear solvers:
+	Iterative and direct
+	Krylov methods
+	Preconditioners
+	How does this relate to Poisson and HH?
+	- 	Small wavenumbers good convergence
+
+Project direction:
+	Where are we going? What to do...?
+	Multigrid in non-cartesian coordinates
+	Fourier decompostion of HH
+	Explore implementation of PMLs
+\fi
+
+
+\section{The Helmholtz equation}
+
+Consider the wave equation in $n=2,3$ dimensions, in an infinite 
+domain,
+\[
+	\frac{1}{c^2} \frac{\partial^2 u}{\partial t^2} = 
+		\nabla^2 u, \label{eqn:wave}
+\]
+where $\nabla^2$ is the Laplacian operator and $c$ is the wavespeed.
+If we assume that the real solution $u(\mathbf{x},t)$ is time-harmonic, that is, the time-dependence of the solution is sinusoidal with a single frequency $\omega$, then we can write
+\[
+	u(\mathbf{x},t) = 
+		\Re \left( u(\mathbf{x})e^{-i\omega t} \right),
+\]
+where $u(\mathbf{x})$ is a complex-valued function \cite{oomph-hh}.
+Substituting this into \ref{eqn:wave}, we obtain the Helmholtz equation
+\[
+	\nabla^2 u(\mathbf{x}) + k^2 u(\mathbf{x}) = 0, \label{eqn:hh}
+\]
+where $k=\omega/c$ is the wavenumber.
+
+For the problem to be well-posed, boundary conditions must also be specified for the equation.
+Any appropriate Dirichlet, Neumann, or Robin conditions will 
+In addition to the boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique. 
+The Sommerfeld radiation condition \cite{sommerfeld}
+\[
+\lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0.
+\]
+
+
+
+
+
+\section{Finite element method}
+
+\begin{enumerate}
+\item Linear system from discretisation of 
+\item Discretise infinite domain 
+\end{enumerate}
+
+
+\section{Iterative linear solvers}
+
+Linear systems arise from the discretisation of finite element equations.
+
+\[
+	A u = f
+\]
+For small $A$, it is possible to use direct methods to solve these exactly (in exact arithmetic).
+As is often the case in practice, the matrices from the finite element discretisation are too large to compute by direct methods.
+Instead, many iterative methods have been developed to approximate the solution instead.
+A particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space composed of successive powers of the matrix $A$.
+The Krylov space of dimension $k$ is 
+\[
+	\mathcal{K}_k(A, r_0) = \mathrm{span}(r_0, Ar_0, A^2 r_0, \ldots, A^{k-1} r_0).
+\]
+For example, the conjugate gradient method forms an orthogonal basis consisting of search directions.
+Unfortunately, a restriction on the convergence of the CG algorithm is that the matrix $A$ must be symmetric and positive definite.
+This is often not the case for a general problem.
+
+Multigrid
+
+The performance of multigrid methods is excellent for the related Poisson problem.
+For small values of $k$ in \ref{hh}, the matrix arising from the finite element discretisation is well-conditioned.
+As $k$ becomes larger, however, the matrix becomes indefinite and multigrid fails to converge to a solution.
+
+
+\subsection{Preconditioning}
+
+
+
+
+
+
+
+
+\section{Project outline}
+
+The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \texttt{oomph-lib}.
+We would like to explore the performance of the solver for the Fourier decomposition of the Helmholtz equation in cylindrical coordinates.
+Following this, we will also examine the performance of the solver using PMLs to handle reflections on the discretised boundary.
 
