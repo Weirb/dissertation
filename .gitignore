@@ -4,3 +4,4 @@ build/
 *.pdf
 *.bbl
 *.blg
+*.out

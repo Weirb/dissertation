@@ -11,7 +11,7 @@ all:
 # Cleanup post-build, move to external folder
 move:
 	mkdir -p build/
-	mv -f *.aux *.log *.bbl *.blg build/
+	mv -f *.out *.aux *.log *.bbl *.blg build/
 
 # Remove build folder
 clean:
