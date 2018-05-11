@@ -30,16 +30,17 @@ Project direction:
 \fi
 
 
+This document provides a short introduction for the work to be carried out during the dissertation.
+
 \section{The Helmholtz equation}
 
-Consider the wave equation in $n=2,3$ dimensions, in an infinite 
-domain,
+Consider the wave equation in $n=2,3$ dimensions in an infinite domain,
 \[
 	\frac{1}{c^2} \frac{\partial^2 u}{\partial t^2} = 
 		\nabla^2 u,\addtag \label{eqn:wave}
 \]
 where $\nabla^2$ is the Laplacian operator and $c$ is the wavespeed.
-If we assume that the real solution $u(\mathbf{x},t)$ is time-harmonic, that is, the time-dependence of the solution is sinusoidal with a single frequency $\omega$, then we can write
+Assuming the existence of a separable solution with time-harmonic time dependence, we may write the real solution $u(\mathbf{x},t)$ as
 \[
 	u(\mathbf{x},t) = 
 		\Re \left( u(\mathbf{x})e^{-i\omega t} \right),
@@ -51,37 +52,40 @@ Substituting this into \eqref{eqn:wave}, we obtain the Helmholtz equation
 \]
 where $k=\omega/c$ is the wavenumber.
 
-For the problem to be well-posed, boundary conditions must also be specified for the equation.
-Any appropriate Dirichlet, Neumann, or Robin conditions will 
-In addition to the boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique. 
-The Sommerfeld radiation condition \citep{sommerfeld}
+To complete the problem formulation, boundary conditions must also be specified for the PDE.
+Any appropriate Dirichlet, Neumann, or Robin conditions will suffice.
+In addition to the boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique since the domain of the problem is infinite.
+The Sommerfeld radiation condition
 \[
-\lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0.
+\lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0,
 \]
-
+achieves this by ensuring that sources scatter to infinity and do not come from infinity \citep{sommerfeld}.
 
 
 
 
 \section{Finite element method}
 
-\begin{enumerate}
-\item Linear system from discretisation of 
-\item Discretise infinite domain 
-\end{enumerate}
+In order to solve the problem, we will use the C++ library \texttt{oomph-lib} to find the solution using the finite element method.
+This process will involve the discretisation of the equations on each element of the domain with the resulting system being assembled.
 
+Because the problem is defined on an infinite domain, we must truncate the domain to find the solution numerically.
+This causes a problem with the waves interacting with the boundary of the domain, which produces spurious reflections and the resulting solution to become meaningless.
+It is possible to deal with these reflections by introducing an artifical absorbing layer to the boundary of the domain.
+Several such layers exist, including absorbing boundary conditions (ABCs); Dirichlet-to-Neumann condtions (DtNs); and perfectly matched layers (PMLs).
+
+The final result of the finite element method is a linear system, which requires a solver in order to compute the solution.
 
 \section{Iterative linear solvers}
 
-Linear systems arise from the discretisation of finite element equations.
-
+Consider the linear system
 \[
-	A u = f
+	A u = f.
 \]
 For small $A$, it is possible to use direct methods to solve these exactly (in exact arithmetic).
 As is often the case in practice, the matrices from the finite element discretisation are too large to compute by direct methods.
 Instead, many iterative methods have been developed to approximate the solution instead.
-A particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space composed of successive powers of the matrix $A$.
+A particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space composed of successive powers of the matrix $A$ \citep{leveque}.
 The Krylov space of dimension $k$ is 
 \[
 	\mathcal{K}_k(A, r_0) = \mathrm{span}(r_0, Ar_0, A^2 r_0, \ldots, A^{k-1} r_0).
@@ -90,15 +94,12 @@ For example, the conjugate gradient method forms an orthogonal basis consisting 
 Unfortunately, a restriction on the convergence of the CG algorithm is that the matrix $A$ must be symmetric and positive definite.
 This is often not the case for a general problem.
 
-Multigrid
-
 The performance of multigrid methods is excellent for the related Poisson problem.
 For small values of $k$ in \eqref{eqn:hh}, the matrix arising from the finite element discretisation is well-conditioned.
 As $k$ becomes larger, however, the matrix becomes indefinite and multigrid fails to converge to a solution.
 
-
-\subsection{Preconditioning}
-
+To handle the ill-conditioned system, a preconditioner can be used so that the problem may be more easily solved by numerical methods.
+Since multigrid is an effective solver for the Poisson problem, it is instead conceivable that few multigrid iterations could be used as a preconditioner for the Helmholtz problem.
 
 
 
