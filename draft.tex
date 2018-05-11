@@ -1,15 +1,24 @@
 \documentclass[11pt]{article}
 
 \usepackage{amsmath,amssymb}
+\usepackage{natbib,url}
+\setcitestyle{numbers,square}
+
+\newcommand\addtag{\refstepcounter{equation}\tag{\theequation}}
+
+
+\title{The Helmholtz Equation}
+\author{Billy Weir}
+\date{2018-05-11}
 
 \begin{document}
+\maketitle
 
 % Just need first file for draft document
 \input{introduction.tex}
 
-
 % Bibliography
+\bibliographystyle{abbrvnat}
 \bibliography{bibliography}
-\bibliographystyle{plain}
 
 \end{document}
