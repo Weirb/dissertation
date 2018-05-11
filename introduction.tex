@@ -36,7 +36,7 @@ Consider the wave equation in $n=2,3$ dimensions, in an infinite
 domain,
 \[
 	\frac{1}{c^2} \frac{\partial^2 u}{\partial t^2} = 
-		\nabla^2 u, \label{eqn:wave}
+		\nabla^2 u,\addtag \label{eqn:wave}
 \]
 where $\nabla^2$ is the Laplacian operator and $c$ is the wavespeed.
 If we assume that the real solution $u(\mathbf{x},t)$ is time-harmonic, that is, the time-dependence of the solution is sinusoidal with a single frequency $\omega$, then we can write
@@ -44,17 +44,17 @@ If we assume that the real solution $u(\mathbf{x},t)$ is time-harmonic, that is,
 	u(\mathbf{x},t) = 
 		\Re \left( u(\mathbf{x})e^{-i\omega t} \right),
 \]
-where $u(\mathbf{x})$ is a complex-valued function \cite{oomph-hh}.
-Substituting this into \ref{eqn:wave}, we obtain the Helmholtz equation
+where $u(\mathbf{x})$ is a complex-valued function \citep{oomph_hh}.
+Substituting this into \eqref{eqn:wave}, we obtain the Helmholtz equation
 \[
-	\nabla^2 u(\mathbf{x}) + k^2 u(\mathbf{x}) = 0, \label{eqn:hh}
+	\nabla^2 u(\mathbf{x}) + k^2 u(\mathbf{x}) = 0, \addtag \label{eqn:hh}
 \]
 where $k=\omega/c$ is the wavenumber.
 
 For the problem to be well-posed, boundary conditions must also be specified for the equation.
 Any appropriate Dirichlet, Neumann, or Robin conditions will 
 In addition to the boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique. 
-The Sommerfeld radiation condition \cite{sommerfeld}
+The Sommerfeld radiation condition \citep{sommerfeld}
 \[
 \lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0.
 \]
@@ -93,7 +93,7 @@ This is often not the case for a general problem.
 Multigrid
 
 The performance of multigrid methods is excellent for the related Poisson problem.
-For small values of $k$ in \ref{hh}, the matrix arising from the finite element discretisation is well-conditioned.
+For small values of $k$ in \eqref{eqn:hh}, the matrix arising from the finite element discretisation is well-conditioned.
 As $k$ becomes larger, however, the matrix becomes indefinite and multigrid fails to converge to a solution.
 
 
