@@ -6,6 +6,26 @@ Conversely, iteration is slow for error components with low frequency components
 By transferring the residual to a coarser grid, the error components with low frequency in the fine grid have high frequency in the coarse grid.
 Hence smoothing iterations converge rapidly for this new problem.
 Now the solution is transferred back to the fine grid by interpolation and applying the coarse grid correction.
-The description above is the outline for the two-grid method, on which many other multgrid methods are based.
+The description above is the outline for the two-grid method, on which many other multgrid methods are based \cite{hackbusch}.
+
+
+\iffalse
+
+The Poisson problem:
+	- Well behaved
+	- Eigenvalues of the residual
+	- Optimal method for finding solution
+
+Helmholtz problem:
+	- Misbehaved
+	- Poor convergence
+	- Indefinite discretisation matrix
+
+\fi
+
+For the finite element method to be compatible with multigrid, several components must exist.
+Firstly, a hierarchy of meshes that define the multiple levels of the method, as well as transfer operators between the levels.
+Next, on each level of the mesh, the Jacobian matrix resulting from the finite element discretisation must be formed in order to solve the problem at that level.
+Finally, a suitable iteration procedure that performs smoothing on each level, for example, Jacobi iteration.
 
 
