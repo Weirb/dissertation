@@ -28,37 +28,12 @@ Project direction:
 \fi
 
 
-This document provides a short introduction for the work to be carried out during the dissertation.
+\section{Background}
 
-\section{The Helmholtz equation}
-
-Consider the wave equation in $n=2,3$ dimensions in an infinite domain,
-\[
-	\frac{1}{c^2} \frac{\partial^2 u}{\partial t^2} = 
-		\nabla^2 u,\addtag \label{eqn:wave}
-\]
-where $\nabla^2$ is the Laplacian operator and $c$ is the wavespeed.
-Assuming the existence of a separable solution with time-harmonic time dependence, we may write the real solution $u(\mathbf{x},t)$ as
-\[
-	u(\mathbf{x},t) = 
-		\Re \left( u(\mathbf{x})e^{-i\omega t} \right),
-\]
-where $u(\mathbf{x})$ is a complex-valued function \citep{oomph_hh}.
-Substituting this into \eqref{eqn:wave}, we obtain the Helmholtz equation
-\[
-	\nabla^2 u(\mathbf{x}) + k^2 u(\mathbf{x}) = 0, \addtag \label{eqn:hh}
-\]
-where $k=\omega/c$ is the wavenumber.
-
-To complete the problem formulation, boundary conditions must also be specified for the PDE.
-Any appropriate Dirichlet, Neumann, or Robin conditions will suffice.
-In addition to the boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique since the domain of the problem is infinite.
-The Sommerfeld radiation condition
-\[
-\lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0,
-\]
-achieves this by ensuring that sources scatter to infinity and do not come from infinity \citep{sommerfeld}.
-
+Motivation.
+Who cares? Why is it difficult?
+What are the benefits?
+Need some citations? Names in the field...
 
 
 
@@ -83,7 +58,7 @@ Consider the linear system
 For small $A$, it is possible to use direct methods to solve these exactly (in exact arithmetic).
 As is often the case in practice, the matrices from the finite element discretisation are too large to compute by direct methods.
 Instead, many iterative methods have been developed to approximate the solution instead.
-A particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space composed of successive powers of the matrix $A$ \citep{leveque}.
+A particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space composed of successive powers of the matrix $A$ \cite{leveque}.
 The Krylov space of dimension $k$ is 
 \[
 	\mathcal{K}_k(A, r_0) = \mathrm{span}(r_0, Ar_0, A^2 r_0, \ldots, A^{k-1} r_0).
@@ -106,6 +81,8 @@ Since multigrid is an effective solver for the Poisson problem, it is instead co
 
 
 \section{Project outline}
+
+What is each chapter doing? What do we hope to accomplish? 
 
 The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \texttt{oomph-lib}.
 We would like to explore the performance of the solver for the Fourier decomposition of the Helmholtz equation in cylindrical coordinates.
