@@ -10,4 +10,91 @@ Shifted Laplace operator
 
 \fi
 
+We wish to solve the three dimensional Helmholtz equation in Fourier decomposed axisymmetric cylindrical coordinates.
+Let us derive the discretisation by finite elements starting from the wave equation in Cartesian coordinates.
 
+\section{Problem derivation}
+
+Consider the three dimensional wave equation with wave speed $c$ in an unbounded domain,
+\begin{equation}
+	\frac{1}{c^2} \frac{\partial^2 u(x,y,z,t)}{\partial t^2} = \nabla^2 u(x,y,z,t). \label{eqn:wave}
+\end{equation}
+Assuming the existence of a separable solution where the time component of the solution is time-harmonic with frequency $\omega$,
+we may write the real-valued solution as
+\[
+	u(x,y,z,t) = \Re \left( U(x,y,z)e^{-i\omega t} \right),
+\]
+where $U(x,y,z)$ is a complex-valued function \cite{oomph_hh}.
+Substituting this into \eqref{eqn:wave}, we obtain the Helmholtz equation
+\begin{equation}
+	\nabla^2 U(x,y,z) + k^2 u(x,y,z) = 0, \label{eqn:hh}
+\end{equation}
+where $k=\omega/c$ is the wavenumber.
+
+The mapping between Cartesian coordinates $(x,y,z)$ and cylindrical polar coordinates $(r,\varphi,z)$ is given by
+\begin{align}
+	x &= r\cos(\varphi), \\
+	y &= r\sin(\varphi), \\
+	z &= z.
+\end{align}
+
+This transforms our equation from $U(x,y,z)$ into $U(r,\varphi,z)$, 
+which we may decompose into Fourier components $u_N(r,z)$ around the $\varphi$ axis, so that
+\begin{equation}
+	U(r,\varphi,z) = \sum_{N=-\infty}^\infty u_N(r,z) e^{iN\varphi}.
+\end{equation}
+By linearity of the Helmholtz equation, for each $N$, $u_N$ must satisfy the Helmholtz equation.
+
+The Laplacian in cylindrical coordinates is given by
+\[
+	\nabla^2 = \frac{\partial^2 }{\partial r^2}
+			 + \frac{1}{r} \frac{\partial }{\partial r}
+			 + \frac{1}{r^2} \frac{\partial^2 }{\partial \varphi^2}
+			 + \frac{\partial^2 }{\partial z^2}
+\]
+
+Splitting the Laplacian into terms not containing derivatives with respect to $\varphi$,
+\begin{align}
+	\nabla^2 U(r,\varphi,z) 
+		&= \nabla^2 \left[\sum_{N=-\infty}^\infty u_N(r,z) e^{i N \varphi}\right] \\
+		&= \sum_{N=-\infty}^\infty \left[ 
+										\nabla^2 u_N(r,z) - \frac{N^2}{r^2}u_N(r,z)
+								   \right] e^{i N \varphi}.
+\end{align}
+
+This gives us the Fourier decomposed Helmholtz equation,
+\begin{equation}
+	\nabla^2 u_N(r,z) + (k^2 - \frac{N^2}{r^2})u_N(r,z) = 0. \label{eqn:fhh}
+\end{equation}
+
+
+\section{Boundary conditions}
+
+To complete the problem formulation, boundary conditions must also be specified for the PDE.
+Any appropriate Dirichlet, Neumann, or Robin conditions will suffice.
+In addition to the boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique since the domain of the problem is infinite.
+The Sommerfeld radiation condition
+\[
+\lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0,
+\]
+achieves this by ensuring that sources scatter to infinity and do not come from infinity \cite{sommerfeld}.
+
+
+\section{Discretisation by finite elements}
+
+Consider now the weak form of \eqref{eqn:fhh}. For a test function $v \in V$, for some space of test functions $V$.
+Multiplying by the test function $v$ and integrating over the domain gives
+\begin{equation}
+	\int_\Omega \nabla u_N \cdot \nabla v 
+  - (k^2 - \frac{N^2}{r^2}) \int_\Omega u_N v 
+  - \int_{\partial \Omega} v \frac{\partial u_N}{\partial \vec{n}} = 0.
+\end{equation}
+where $\vec{n}$ is the outward facing normal vector.
+
+
+
+\subsection{Discretisation of boundary conditions}
+
+What are the boundary conditions that we have?
+Sommerfeld, Neumann, PML..
+How do we discretise these?
