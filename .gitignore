@@ -8,3 +8,5 @@ build/
 *.out
 *.fls
 *.fdb_latexmk
+*.gz
+
