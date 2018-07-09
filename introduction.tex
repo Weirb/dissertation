@@ -30,11 +30,32 @@ Project direction:
 
 \section{Background}
 
+\iffalse
 Motivation.
 Who cares? Why is it difficult?
 What are the benefits?
 Need some citations? Names in the field...
+\fi
 
+
+
+Because of the fundamental nature of waves, the wave equation has widespread application and appears in several contexts in science, engineering, and industry.
+For example, in electromagnetics, Maxwell's equations describe the physical properties of waves generated from electric and magnetic fields.
+In acoustics, the propagation of sound waves may be modelled by the same equations.
+Also, modelling of seismic waves can help to better understand earthquakes and aid in the search for materials or objects underground.
+Understanding and modelling scattering of waves is of great importance and practical use.
+
+<<CITATION>>
+Work in the field of waves began as early as with d'Alembert and Euler in the middle of the 18$^\text{th}$ century.
+The motivation behind these ideas was the development of optics and the propagation of light.
+This in turn led to the invention of telescopes and microscopes and paved the road for further scientific discovery.
+
+The work in this project will primarily focus on the related partial differential equation, the Helmholtz equation.
+The wave and Helmholtz equations are closely linked, and study of one can lead to insight in the other.
+When seeking separable solutions of the wave equation, the Helmholtz equation appears as a time-independent form of the wave equation.
+The solutions of the time-independent equation represent steady state solutions.
+
+The specific problem 
 
 
 \section{Finite element method}
@@ -82,9 +103,14 @@ Since multigrid is an effective solver for the Poisson problem, it is instead co
 
 \section{Project outline}
 
+\iffalse
 What is each chapter doing? What do we hope to accomplish? 
+\fi
+
+The motivation for this thesis is 
 
 The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \texttt{oomph-lib}.
-We would like to explore the performance of the solver for the Fourier decomposition of the Helmholtz equation in cylindrical coordinates.
+We would like to explore the performance of the solver for the Fourier decomposed version of the Helmholtz equation in axisymmetric cylindrical coordinates.
 Following this, we will also examine the performance of the solver using PMLs to handle reflections on the discretised boundary.
 
+The numerical solution of the Helmholtz equation 
