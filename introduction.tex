@@ -60,7 +60,7 @@ The specific problem
 
 \section{Finite element method}
 
-In order to solve the problem, we will use the C++ library \texttt{oomph-lib} to find the solution using the finite element method.
+In order to solve the problem, we will use the C++ library \oomph to find the solution using the finite element method.
 This process will involve the discretisation of the equations on each element of the domain with the resulting system being assembled.
 
 Because the problem is defined on an infinite domain, we must truncate the domain to find the solution numerically.
@@ -109,7 +109,7 @@ What is each chapter doing? What do we hope to accomplish?
 
 The motivation for this thesis is 
 
-The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \texttt{oomph-lib}.
+The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \oomph.
 We would like to explore the performance of the solver for the Fourier decomposed version of the Helmholtz equation in axisymmetric cylindrical coordinates.
 Following this, we will also examine the performance of the solver using PMLs to handle reflections on the discretised boundary.
 
