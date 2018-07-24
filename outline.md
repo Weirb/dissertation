@@ -18,22 +18,28 @@ Possible title:
 	Boundary conditions, interpretations, similar results.
 	Complex shifted laplacian.
 
-3. Multigrid
+3. Finite element method
+	What are the components, outline of the method.
+	Where does my work fit in?
+	Benefits of FEM vs other methods.
+	Talk about oomph-lib.
+
+4. Multigrid
 	How does multigrid work?
 	What are the difficulties as we increase the dimension of the problem?
 	How does FEM come work with mutltigrid?
 	Geometric vs. algebraic.
 	Figure of the grid hierarchy.
 
-4. Results
+5. Results
 	Essentially, what is the output from the oomph-lib stuff
 	Lots of graphs/figures/tables
+	Comparison between mg cartesian and mg cylindrical
 
-5. Conclusion 
+6. Conclusion 
 	Summary of results.
 	Conclude the work.
 
 ## Comments
 
 Need some more chapters. What to include?
-If the code does not work then need to pivot anyway.
