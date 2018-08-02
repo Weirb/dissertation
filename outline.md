@@ -43,3 +43,15 @@ Possible title:
 ## Comments
 
 Need some more chapters. What to include?
+
+
+
+## Notes
+
+Mention the different mg cycles, reference papers.
+Talk about their features, the smoothing and restriction/prolongation operators.
+Different levels/grids.
+
+On comparison of multigrid cycles...
+Mentions solver not good for cartesian, works fine for cylindrical.
+This is important, need to say possible that this wont work -- introduction
