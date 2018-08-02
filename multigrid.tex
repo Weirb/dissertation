@@ -1,6 +1,10 @@
 \section{Multigrid methods}
 
 Multigrid refers to a family of methods which use multiple grid levels in order to achieve high rates of convergence to solve linear systems.
+The algorithm time-complexity is linear in the number of equations, making multigrid an optimal solver for many problems.
+Multigrid is applied to find the solution to elliptic PDEs, such as the Poisson problem, or our problem of focus, the Helmholtz equation.
+
+Let us motivate multigrid by considering the downfalls of the Jacobi method.
 Iteration converges rapidly for error components whose frequency components are high.
 Conversely, iteration is slow for error components with low frequency components.
 By transferring the residual to a coarser grid, the error components with low frequency in the fine grid have high frequency in the coarse grid.
@@ -20,8 +24,6 @@ Firstly, a hierarchy of meshes that define the multiple levels of the method, as
 Next, on each level of the mesh, the Jacobian matrix resulting from the finite element discretisation must be formed in order to solve the problem at that level.
 Finally, there must be  a suitable smoothing iteration procedure on each level.
 In our case, this is FGMRES, however any appropriate iterative solver will be sufficient.
-
-We will discuss these topics in more depth in the rest of this chapter.
 
 
 
@@ -88,31 +90,51 @@ Alternatively, one could choose to implement their own smoother to override the 
 In this paper, the results and analysis are obtained from using the FGMRES solver.
 
 
+\subsubsection{FGMRES}
+
+In general, Krylov subspace methods should not be used for smoothing operations.
+This is because of their property that...
+
+Hence, the standard GMRES method is not a suitable choice of smoother.
+Because of this, the flexible version of the GMRES algorithm, appropriately named FGMRES, may be used instead.
+This method was proposed by Saad \cite{fgmres}, 
+
+
+
+
 
 \subsection{Prolongation}
 
-Prolongation, sometimes known as interpolation, is the process of transferring data from a coarse grid to a finer grid.
+Prolongation, sometimes known as interpolation, is the process of transferring data up a level from a coarse grid to a finer grid.
+
+Let $\Omega^h$ and $\Omega^{2h}$ be the meshes on the fine and coarse levels, respectively, and let $V^{h}$ and $V^{2h}$ be the finite element spaces on their respective meshes.
+Since $\Omega^{h}$ is obtained through refinement of $\Omega^{2h}$, we have that $V^{2h}\subset V^h$.
+Then we can define the canonical prolongation operator \cite{volker},
+\begin{align}
+	I^h_{2h} \, : \, V^{2h} \rightarrow V^h.
+\end{align}
+
 
 This operator can often be represented by a matrix in 
 
 The simplest method of prolongation is an averaging procedure, which linearly interpolates the values in
 
-
+This is done by sampling
 
 % How does oomph-lib do it?
-
-
-\begin{figure}
-	% \includegraphics[]{}
-	\caption{Prolongation and restriction operators acting on sample points}
-\end{figure}
 
 
 
 \subsection{Restriction}
 
-The `inverse' operation to prolongation is restriction, which is the process of transferring data from a fine grid to a coarser grid.
-Although the two 
+Restriction, sometimes known as coarsening or injection, is the `inverse' operation to prolongation.
+This process transfers data down a grid level from a fine grid to a coarser grid.
+
+The simplest restriction operation is the injection, which 
+
+
+As above, let 
+
 
 % Transpose of prolongation
 % Many choices, no need to use inverse of prolongation
@@ -120,7 +142,10 @@ Although the two
 
 
 
-
+\begin{figure}
+	% \includegraphics[]{}
+	\caption{Prolongation and restriction operators acting on sample points}
+\end{figure}
 
 
 
