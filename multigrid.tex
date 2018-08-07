@@ -85,9 +85,11 @@ For example, in the case of a V or W-cycle, both pre-smoothing and post-smoothin
 However, in the case of an S-cycle, no pre-smoothing operations are performed, and only post-smoothing is applied.
 For certain problems, this can improve performance because of the reduction of the smoothing operations \cite{iyengar}.
 
-The particular choice of smoother in \oomph is between the complex damped Jacobi method and FGMRES.
+The particular choice of smoother in \oomph is between the complex damped Jacobi method and GMRES.
 Alternatively, one could choose to implement their own smoother to override the default behaviour.
-In this paper, the results and analysis are obtained from using the FGMRES solver.
+Generally speaking, 
+
+In this paper, the results and analysis are obtained from using the GMRES solver.
 
 
 \subsubsection{FGMRES}
