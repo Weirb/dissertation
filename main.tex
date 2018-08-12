@@ -1,29 +1,26 @@
 % !TeX root = ./main.tex
 \documentclass[12pt,MSc,twoside]{muthesis}
 
+\usepackage{import}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 
 \def \oomph {\texttt{oomph-lib}}
 
+\ifdefined\only
+	\includeonly{fem}
+\fi
+
 \begin{document}
 
 \iffalse 
-	\input{preamble.tex} 
+	\include{preamble} 
 \fi
 
-
-% \chapter{Introduction}
-% \input{introduction.tex}
-
-% \chapter{Problem description}
-% \input{problem.tex}
-
-% \chapter{Finite element method}
-% \input{fem.tex}
-
-\chapter{Multigrid}
-\input{multigrid.tex}
+\include{introduction}
+\include{problem}
+\include{fem}
+\include{multigrid}
 
 \bibliography{bibliography}
 \bibliographystyle{plain}
