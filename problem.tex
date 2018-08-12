@@ -91,23 +91,3 @@ The Sommerfeld radiation condition
 \lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0,
 \]
 achieves this by ensuring that sources scatter to infinity and do not come from infinity \cite{sommerfeld}.
-
-
-\section{Discretisation by finite elements}
-
-Consider now the weak form of \eqref{eqn:fhh}. For a test function $v \in V$, for some space of test functions $V$.
-Multiplying by the test function $v$ and integrating over the domain gives
-\begin{equation}
-	\int_\Omega \nabla u_N \cdot \nabla v 
-  - (k^2 - \frac{N^2}{r^2}) \int_\Omega u_N v 
-  - \int_{\partial \Omega} v \frac{\partial u_N}{\partial \vec{n}} = 0.
-\end{equation}
-where $\vec{n}$ is the outward facing normal vector.
-
-
-
-\subsection{Discretisation of boundary conditions}
-
-What are the boundary conditions that we have?
-Sommerfeld, Neumann, PML..
-How do we discretise these?
