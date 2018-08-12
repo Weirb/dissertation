@@ -1,1 +1,180 @@
+\chapter{The finite element method}
 
+This chapter discusses the well known and widely used method for solving partial differential equations, the finite element method (FEM).
+To avoid building and adding another library to the already vast ecosystem of available FEM software, we use the multi-physics FEM library, \oomph.
+From the website, \oomph is:
+\begin{quote}
+	an object-oriented, open-source finite-element library for the simulation of multi-physics problems. \cite{oomph}
+\end{quote}
+There are several high level features of any general finite element procedure that will be addressed below.
+In addition to this, an overview of specific implementation details and features available in \oomph will also be covered.
+
+
+
+% -----------------------------------------------------------
+
+\section{Preliminaries}
+
+We begin this chapter by discussing the necessary mathematical background for the finite element method.
+
+Let us first define a problem in our context of interest.
+A problem $(P)$ is one or more differential equations, together with appropriate boundary or initial conditions such that 
+
+\iffalse WHAT DO WE NEED TO INCLUDE?
+
+* Sobolev spaces
+* Hilbert spaces 
+* Banach spaces
+* Norms/inner products
+
+\fi
+
+
+
+\subsection{Function spaces}
+The test functions used in the upcoming weak formulation are members of a Sobolev space.
+These function spaces are used to weight the residual of equation, 
+
+The space of functions
+\begin{align}
+	H^1(\Omega) = \left\{ v | v \in L^2(\Omega), \, \nabla v \in (L^2(\Omega))^n \right\},
+\end{align}
+consists of those functions that are square-integrable and have a square-integrable derivative.
+
+
+
+% -----------------------------------------------------------
+
+\section{Nodes, elements, and meshes}
+
+A mesh is a collection of elements; an element is a collection of nodes.
+
+The building blocks of the FEM are surely the elements themselves, for which the method is named.
+The elements are the 
+
+Together with the elements, other fundamental pieces of the FEM are the nodes and the mesh.
+Every element consists of multiple nodal points, each of which holds data required for solving the problem.
+For example, nodes contain the global coordinate of their position within the mesh
+
+A mesh is a collection of elements
+
+
+There is one more detail of the hierarchy of entities for \oomph.
+A \texttt{Problem} object contains details of a specific implementation for a problem, one of whose components is a mesh.
+A \texttt{Node} objects contains multiple \texttt{Data} objects, holding the any or more of the data mentioned above.
+This is simply an implementation detail, but an important one nonetheless. 
+
+
+One of the fortunate things about the FEM is the discrete entities that are involved.
+This lends itself to object-oriented programming (OOP) design principles particularly well.
+Such a design strategy involves the definition of classes, and their instantiation as objects.
+Furthermore, classes may be extended using inheritance, allowing for highly abstracted and generic classes, and on the other end, highly specific classes.
+This works to both developers and users of the library advantage.
+Developers are able to work independently of each other, knowing only how their respective objects should interact.
+Users are able to extend previous work to suit their own needs.
+
+Further discussion of OOP design principles is irrelevant and outside of the scope of this project.
+
+
+
+
+% -----------------------------------------------------------
+
+\section{Weak formulation}
+
+The classical or strong formulation of a differential equation
+The weak form of a differential equation is a relaxation of the conditions for the existence of a solution to the equation.
+
+Given a test function $v$ from some function space $V$, we multiply our equation by $v$ and integrate over the domain.
+
+
+
+It is also needed that the test function satisfies the 
+
+
+
+Recall our PDE, the Fourier decomposed Helmholtz equation, \eqref{eqn:fhh}.
+We will now derive the weak form of this equation as described above. Firstly by multiplying by a test function $v \in V$, then integrating over the domain $\Omega$.
+For all $v \in V$,
+\begin{align}
+	-\int_\Omega \left(\nabla^2 u_N + \left(k^2-\frac{N^2}{r^2}\right)u_N \right) v = 0.
+\end{align}
+Using the product rule for the gradient operator $\nabla$, we rewrite the higher order derivatives as a sum of lower order terms.
+\begin{align}
+	-\int_\Omega \nabla \cdot \left( v \nabla u_N \right) - \nabla u_N \cdot \nabla v + \left(k^2-\frac{N^2}{r^2}\right)u_N v = 0.
+\end{align}
+Finally, the use of the of the divergence theorem yields
+\begin{align}
+	\int_\Omega \nabla u_N \cdot \nabla v - \left(k^2 - \frac{N^2}{r^2}\right) \int_\Omega u_N v - \int_{\partial\Omega} v \frac{\partial u_N}{\partial \vec{n}} = 0.
+\end{align}
+where $\vec{n}$ is the outward facing normal vector from the boundary $\partial \Omega$.
+
+The boundary integral may be further split up into parts sorted by their respective boundary conditions.
+If the portion of the boundary whose solution value is known is represented by $\partial \Omega_D$ and the remaining boundary is represented as $\partial \Omega_N$, then
+\begin{align}
+	\partial \Omega_D \cup \partial \Omega_N &= \partial \Omega. \\
+	\partial \Omega_D \cap \partial \Omega_N &= \emptyset.
+\end{align}
+Given these exclusivity properties on the boundary, we may write the term for the boundary integral as
+\begin{align}
+	\int_{\partial\Omega} = \int_{\partial\Omega_D} + \int_{\partial\Omega_N}.
+\end{align}
+Since the test functions are exactly 0 on the Dirichlet portion of the boundary, it is the case that
+\begin{align}
+	\int_{\partial\Omega_D} v \frac{\partial u_N}{\partial \vec{n}} = 0.
+\end{align}
+
+The final step in the weak formulation of our equation results in
+\begin{align}
+	\int_\Omega \nabla u_N \cdot \nabla v - \left(k^2 - \frac{N^2}{r^2}\right) \int_\Omega u_N v - \int_{\partial\Omega_N} v \frac{\partial u_N}{\partial \vec{n}} = 0,
+\end{align}
+for all test functions $v\in V$.
+
+
+
+
+
+
+% ----------------------------------------------------------
+
+\subsection{Discretisation of boundary conditions}
+
+\iffalse 
+What are the boundary conditions that we have?
+Sommerfeld, Neumann, PML..
+How do we discretise these?
+\fi
+
+
+
+
+
+
+
+\section{Galerkin method}
+
+In the Galerkin method, the test functions are the element basis functions.
+This has the advantage that no 
+
+
+
+
+
+\section{Rayleigh-Ritz method}
+
+As an alternative to the Galerkin method presented above, we briefly present another formulation of the finite element method.
+The Rayleigh-Ritz method begins with a functional, instead of the weak form.
+Solving the differential equation $Lu=f$ is formally equivalent to minimising the functional
+\begin{align}
+	F(u) = \frac{1}{2}\left( Lu, u \right) - \left( f, u \right).
+\end{align}
+
+The two methods coincide when the linear operator $L$ is positive and self-adjoint and the function $F$ is quadratic.
+
+
+
+
+
+\section{Putting it all together}
+
+Once the equations have been 
