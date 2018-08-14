@@ -31,7 +31,7 @@ Project direction:
 \fi
 
 
-\section{Background}
+\section{Historical background}
 
 \iffalse
 Motivation.
@@ -61,6 +61,10 @@ The solutions of the time-independent equation represent steady state solutions.
 The specific problem 
 
 
+
+
+% ----------------------------------------------
+
 \section{Finite element method}
 
 In order to solve the problem, we will use the C++ library \oomph to find the solution using the finite element method.
@@ -72,6 +76,11 @@ It is possible to deal with these reflections by introducing an artifical absorb
 Several such layers exist, including absorbing boundary conditions (ABCs); Dirichlet-to-Neumann condtions (DtNs); and perfectly matched layers (PMLs).
 
 The final result of the finite element method is a linear system, which requires a solver in order to compute the solution.
+
+
+
+
+% ----------------------------------------------
 
 \section{Iterative linear solvers}
 
@@ -100,13 +109,57 @@ Since multigrid is an effective solver for the Poisson problem, it is instead co
 
 
 
+
+% ----------------------------------------------
+
 \section{Literature Review}
 
+\iffalse
+
+Topics to cover:
+	Solving Poisson problem
+	Solving Helmholtz
+	Complex shifted laplacian
+	Multigrid
+	Cylindrical coordinates
+
+Mention one or two references for each, try and reach >2 pages.
+
+\fi
+
+Let us discuss the current state of the literature in relation to our problems.
+
+\subsection{Multigrid}
+
+Wesseling \cite{wesseling} describes the historical development of multigrid methods up to 1985
+It is also stated that the first mention of multigrid was by the Russian mathematician Fedorenko \cite{fedorenko}.
+In his paper, a method for solving elliptic type equations which he called the ``the method of alternating direction''.
+Later, Hackbusch independently discovered multigrid
+the year in which Hackbusch \cite{hackbusch} released his seminal book with a full treatment of multigrid methods.
+
+
+% Should we include this?
+More recent work on multigrid consisted of the development of algebraic multigrid (AMG) methods.
+These consist of decoupling the geometry of the problem from any operators involved in the iteration.
+This allows for more complex problems wherein there may not be a sense of a geometry for the problem.
+The method seeks to smooth errors in some algebraic sense, rather than geometrically \cite{}.% CITATION NEEDED
+
+Since multigrid was developed in order to find solutions to elliptic problems, the majority of work has been focused in that area.7
+As the prototypical example of an elliptic PDE is Poisson's equation, we can be certain that the mathematical framework for solving this is set.
+The difficulty lies with the Helmholtz equation, which can be thought of a perturbation by $k^2$ of the Laplace operator in the Poisson equation.
+As both the Poisson and Helmholtz equations are both of elliptic type, we should expect behaviour to be similar.
+However, this is not the case.
+
+Complex-shifted laplacian 
+References 5,6
+https://arxiv.org/pdf/1312.2880.pdf
 
 
 
 
 
+
+% -----------------------------------------------
 
 \section{Project outline}
 
