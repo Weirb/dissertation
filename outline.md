@@ -70,3 +70,8 @@ We have to use FGMRES because the preconditioner changes from iteration to itera
 We use GMRES because of the paper references in the code (elman).
 The Jacobian matrix is "block complex", with the given structure (A_r, -A_c; A_c, A_r) 
 
+---
+
+We need to make a comparison for the 1D variable coefficient solver.
+Discuss what the problem is, according to Briggs.
+Mention the iteration count against the Poisson vs with the 1/r term.
