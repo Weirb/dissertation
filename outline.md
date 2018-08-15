@@ -72,6 +72,8 @@ The Jacobian matrix is "block complex", with the given structure (A_r, -A_c; A_c
 
 ---
 
+Do this in multigrid, make a section named variable coefficients.
+Discuss Briggs and his attempt to solve this problem.
 We need to make a comparison for the 1D variable coefficient solver.
 Discuss what the problem is, according to Briggs.
 Mention the iteration count against the Poisson vs with the 1/r term.
