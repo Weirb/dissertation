@@ -81,13 +81,64 @@ This gives us the Fourier decomposed Helmholtz equation,
 \end{equation}
 
 
+
+
+
+% ----------------------------------------
+
 \section{Boundary conditions}
 
 To complete the problem formulation, boundary conditions must also be specified for the PDE.
-Any appropriate Dirichlet, Neumann, or Robin conditions will suffice.
+Since our equation is of elliptic type, any appropriate Dirichlet, Neumann, or Robin conditions will suffice.
 In addition to the boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique since the domain of the problem is infinite.
 The Sommerfeld radiation condition
 \[
 \lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0,
 \]
 achieves this by ensuring that sources scatter to infinity and do not come from infinity \cite{sommerfeld}.
+
+
+
+
+\subsection{Perfectly matched layers}
+
+Perfectly matched layers (PML) are a method for handling infinite domains computationally, by damping or absorbing the wave-like solution in a layer outside of the region of interest.
+Without such a tool, the truncated domain acts like a hard boundary, causing reflections of the solution back onto the domain.
+These reflections are not physical, and so any solution found with these artifacts are useless for a physical model of waves.
+The use of a PML will instead absorb the 
+
+
+\begin{figure}[h]
+	\centering
+	% FIGURE FOR PML, show outside boundary 
+	\includegraphics[draft]{images/placeholder}
+	\caption{Perfectly matched layer \label{fig:pml}}
+\end{figure}
+
+% NEED TO MENTION AXIS-ALIGNED COORDINATES AND OTHERS
+
+Inside of the PML, derivatives are mapped according to a complex coordinate transformation.
+For our case in $r$ and $z$ coordinates, the derivatives get transformed to
+\begin{align}
+	\frac{\partial}{\partial r} \rightarrow \frac{1}{\gamma_r(r)}\frac{\partial}{\partial r}, \qquad \qquad
+	\frac{\partial}{\partial z} \rightarrow \frac{1}{\gamma_z(z)}\frac{\partial}{\partial z},
+\end{align}
+where the damping factors $\gamma_r$ and $\gamma_z$ inside of the PML are given by
+\begin{align}
+	\gamma_r(r) &= 1 + \frac{i}{k} \frac{1}{\left| R_{\text{PML}} - r \right|}, \\
+	\gamma_z(z) &= 1 + \frac{i}{k} \frac{1}{\left| Z_{\text{PML}} - z \right|},
+\end{align}
+where $R_{\text{PML}}$ and $Z_{\text{PML}}$ are the $r$ and $z$ coordinates of the PML 
+Inside of the computational region, the PML is not active so the damping is not desirable.
+Hence,
+\begin{align}
+	\gamma_r(r) = \gamma_z(z) = 1.
+\end{align}
+
+
+
+\begin{align}
+	%
+\end{align}
+
+Given a computational domain 
