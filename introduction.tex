@@ -31,6 +31,72 @@ Project direction:
 \fi
 
 
+% ----------------------------------------------
+
+% \section{Preliminaries}
+
+The equation of interest in this project is the Helmholtz partial differential equation.
+More specifically, we will focus on the Helmholtz equation in circular cylindrical coordinates and decomposed into Fourier modes in the azimuthal direction,
+\begin{equation}
+	\nabla^2 u(r,z) + \left(k^2-\frac{N^2}{r^2}\right) u(r,z).
+\end{equation}
+This equation appears when seeking separable solutions by separating the time and space variables in the wave equation.
+As such, it can be thought of as the steady-state of time-indepedent solution of the wave equation.
+We will examine this equation mathematically, and discuss the difficulties in finding a solution numerically.
+
+Along with the 
+Because the problem is defined on an infinite domain, we must truncate the domain to find the solution numerically.
+This causes a problem with the waves interacting with the boundary of the domain, which produces spurious reflections and the resulting solution to become meaningless.
+It is possible to deal with these reflections by introducing an artifical absorbing layer to the boundary of the domain.
+Several such layers exist, including absorbing boundary conditions (ABCs); Dirichlet-to-Neumann condtions (DtNs); and perfectly matched layers (PMLs).
+
+In order to solve the problem, we will use the C++ library \oomph to find the solution using the finite element method.
+This process will involve the discretisation of the equations on each element of the domain with the resulting system being assembled.
+The result of the finite element discretisation is an $n\times n$ linear system of equations,
+\[
+	A u = f,
+\]
+which requires a solver in order to compute the solution.
+In \oomph, the default linear solver is SuperLU, however this is also a direct solver.
+This has the benefit that the computed solution to the above equation is exact, modulo any floating point errors.
+But the computational cost is prohibitively expensive as the size of the problem increases.
+
+For small $A$, it is possible to use direct methods to solve these exactly (in exact arithmetic).
+As is often the case in practice, the matrices from the finite element discretisation are too large to compute by direct methods.
+Instead, many iterative methods have been developed to approximate the solution instead.
+A particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space composed of successive powers of the matrix $A$ \cite{leveque}.
+The Krylov space of dimension $k$ is 
+\[
+	\mathcal{K}_k(A, r_0) = \mathrm{span}(r_0, Ar_0, A^2 r_0, \ldots, A^{k-1} r_0).
+\]
+For example, the conjugate gradient method forms an orthogonal basis consisting of search directions.
+Unfortunately, a restriction on the convergence of the CG algorithm is that the matrix $A$ must be symmetric and positive definite.
+This is often not the case for a general problem.
+
+% REWORD THIS PARAGRAPH
+Understanding that Krylov methods act on certain parts of the spectrum of the residual to dampen a range of frequencies is the key idea in multigrid methods.
+Transferring the residual of an equation on to a mesh with a different resolution can shift the frequency of the error in the residual.
+This allows the Krylov method, in this context known as a \textit{smoother}, to dampen the whole spectrum of the error, resulting in rapid convergnce.
+
+The performance of multigrid methods is excellent for the related Poisson problem,
+\begin{equation}
+	\nabla^2 u = 0.
+\end{equation}
+Indeed, it is an optimal solver with time-complexity of $O(n)$ for a problem of size $n\times n$.
+For sufficiently small values of $k$, the Helmholtz equation is well approximated by Poisson's equation.
+In addition, the matrix arising from the finite element discretisation is well-conditioned.
+As $k$ becomes larger, however, the matrix becomes indefinite and more and more ill-conditioned.
+This causes multigrid to fail to converge to a solution.
+To handle the ill-conditioned system, a preconditioner can be used so that the problem may be more easily solved by numerical methods.
+
+The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \oomph.
+We would like to explore the performance of the solver for the Fourier decomposed version of the Helmholtz equation in axisymmetric cylindrical coordinates.
+Following this, we will also examine the performance of the solver using PMLs to handle reflections on the discretised boundary.
+
+
+
+% ----------------------------------------------
+
 \section{Historical background}
 
 \iffalse
@@ -59,54 +125,6 @@ When seeking separable solutions of the wave equation, the Helmholtz equation ap
 The solutions of the time-independent equation represent steady state solutions.
 
 The specific problem 
-
-
-
-
-% ----------------------------------------------
-
-\section{Finite element method}
-
-In order to solve the problem, we will use the C++ library \oomph to find the solution using the finite element method.
-This process will involve the discretisation of the equations on each element of the domain with the resulting system being assembled.
-
-Because the problem is defined on an infinite domain, we must truncate the domain to find the solution numerically.
-This causes a problem with the waves interacting with the boundary of the domain, which produces spurious reflections and the resulting solution to become meaningless.
-It is possible to deal with these reflections by introducing an artifical absorbing layer to the boundary of the domain.
-Several such layers exist, including absorbing boundary conditions (ABCs); Dirichlet-to-Neumann condtions (DtNs); and perfectly matched layers (PMLs).
-
-The final result of the finite element method is a linear system, which requires a solver in order to compute the solution.
-
-
-
-
-% ----------------------------------------------
-
-\section{Iterative linear solvers}
-
-Consider the linear system
-\[
-	A u = f.
-\]
-For small $A$, it is possible to use direct methods to solve these exactly (in exact arithmetic).
-As is often the case in practice, the matrices from the finite element discretisation are too large to compute by direct methods.
-Instead, many iterative methods have been developed to approximate the solution instead.
-A particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space composed of successive powers of the matrix $A$ \cite{leveque}.
-The Krylov space of dimension $k$ is 
-\[
-	\mathcal{K}_k(A, r_0) = \mathrm{span}(r_0, Ar_0, A^2 r_0, \ldots, A^{k-1} r_0).
-\]
-For example, the conjugate gradient method forms an orthogonal basis consisting of search directions.
-Unfortunately, a restriction on the convergence of the CG algorithm is that the matrix $A$ must be symmetric and positive definite.
-This is often not the case for a general problem.
-
-The performance of multigrid methods is excellent for the related Poisson problem.
-For small values of $k$ in \eqref{eqn:hh}, the matrix arising from the finite element discretisation is well-conditioned.
-As $k$ becomes larger, however, the matrix becomes indefinite and multigrid fails to converge to a solution.
-
-To handle the ill-conditioned system, a preconditioner can be used so that the problem may be more easily solved by numerical methods.
-Since multigrid is an effective solver for the Poisson problem, it is instead conceivable that few multigrid iterations could be used as a preconditioner for the Helmholtz problem.
-
 
 
 
@@ -165,12 +183,20 @@ https://arxiv.org/pdf/1312.2880.pdf
 
 \iffalse
 What is each chapter doing? What do we hope to accomplish? 
+This entire chapter will need fleshing out/rewording depending on the scope of each chapter.
 \fi
 
-The motivation for this thesis is 
+Chapter one, as you may have just finished reading, contains the introduction to the project.
+This has hopefully given you, the reader, the modern and historical context of the problem of interest.
 
-The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \oomph.
-We would like to explore the performance of the solver for the Fourier decomposed version of the Helmholtz equation in axisymmetric cylindrical coordinates.
-Following this, we will also examine the performance of the solver using PMLs to handle reflections on the discretised boundary.
+The focus of chapter two is to develop the mathematical context of the problem.
+Here we will give the necessary mathematical overview and description of the 
 
-The numerical solution of the Helmholtz equation 
+Chapter three aims to cover the finite element method in sufficient detail 
+Also covered are relevant references to the FEM implementation within \oomph.
+That is to say, how is the mathematical description of FEM transferred to an object-oriented code able to solve PDEs numerically.
+
+Chapter four will cover the mathematics of multigrid.
+
+Finally, the project will end with a discussion of the results and concluding remarks in chapters six and seven.
+Here, a summary of findings and an overview of the work completed in the project will be given.
