@@ -116,8 +116,13 @@ Understanding and modelling scattering of waves is of great importance and pract
 
 <<CITATION>>
 Work in the field of waves began as early as with d'Alembert and Euler in the middle of the 18$^\text{th}$ century.
-The motivation behind these ideas was the development of optics and the propagation of light.
-This in turn led to the invention of telescopes and microscopes and paved the road for further scientific discovery.
+The work of d'Alembert was motivated by the study of music.
+Instruments with strings, such as guitars and violins, vibrate when plucked.
+These vibrations can be modelled by 
+
+
+% The motivation behind these ideas was the development of optics and the propagation of light.
+% This in turn led to the invention of telescopes and microscopes and paved the road for further scientific discovery.
 
 The work in this project will primarily focus on the related partial differential equation, the Helmholtz equation.
 The wave and Helmholtz equations are closely linked, and study of one can lead to insight in the other.
@@ -145,32 +150,53 @@ Mention one or two references for each, try and reach >2 pages.
 
 \fi
 
+% INTRO
 Let us discuss the current state of the literature in relation to our problems.
-
-\subsection{Multigrid}
-
-Wesseling \cite{wesseling} describes the historical development of multigrid methods up to 1985
-It is also stated that the first mention of multigrid was by the Russian mathematician Fedorenko \cite{fedorenko}.
-In his paper, a method for solving elliptic type equations which he called the ``the method of alternating direction''.
-Later, Hackbusch independently discovered multigrid
-the year in which Hackbusch \cite{hackbusch} released his seminal book with a full treatment of multigrid methods.
+We will focus our attention on multigrid methods and the finite element method applied to solving the Helmholtz equation.
+The literature presented will aim to give an overview in generality, and we will refine our scope appropriately in the following chapters.
 
 
-% Should we include this?
-More recent work on multigrid consisted of the development of algebraic multigrid (AMG) methods.
+% FEM
+The finite element method is a widely used method for solving
+
+Introductory courses on solving ordinary or partial differential equations often showcase numerical methods involving finite difference discretisations.
+These are relatively straightforward to implement and the machinery for the implementation is simple.
+On the other hand, finite element methods take a more sophisticated approach to their method of solutions.
+
+
+% MULTIGRID
+Wesseling describes the historical development of multigrid methods from their inception in 1967 up to 1985 \cite{wesseling}.
+It is stated that the first mention of multigrid was by the Russian mathematician Fedorenko.
+In his paper, Fedorenko developed a method for solving elliptic type partial differential equations, which he called the ``the method of alternating direction'' \cite{fedorenko}.
+Later, Hackbusch independently developed multigrid methods and presented the rigorous mathematical framework for multigrid.
+
+% --- Should we include this?
+Other work on multigrid consists of algebraic multigrid (AMG) methods.
 These consist of decoupling the geometry of the problem from any operators involved in the iteration.
 This allows for more complex problems wherein there may not be a sense of a geometry for the problem.
-The method seeks to smooth errors in some algebraic sense, rather than geometrically \cite{}.% CITATION NEEDED
+The method seeks to smooth errors in some algebraic sense, rather than geometrically \cite{briggs}.
 
-Since multigrid was developed in order to find solutions to elliptic problems, the majority of work has been focused in that area.7
+Since multigrid was developed in order to find solutions to elliptic problems, the majority of work has been focused in that area.
 As the prototypical example of an elliptic PDE is Poisson's equation, we can be certain that the mathematical framework for solving this is set.
 The difficulty lies with the Helmholtz equation, which can be thought of a perturbation by $k^2$ of the Laplace operator in the Poisson equation.
 As both the Poisson and Helmholtz equations are both of elliptic type, we should expect behaviour to be similar.
 However, this is not the case.
 
-Complex-shifted laplacian 
-References 5,6
-https://arxiv.org/pdf/1312.2880.pdf
+
+% CSLP PRECONDITIONING
+Work on overcoming the issue for larger values of $k^2$ has been successful.
+The current preferred method for solving the problem is to precondition a Krylov subspace method using a complex-shifted laplacian preconditioner (CSLP).
+Convergence results obtained by authors Erlangga, Oosterlee, and Vuik show that among the class of preconditioners discussed, the CSLP is the most effective in preconditioning the Helmholtz problem for large wavenumber \cite{cslp1}.
+They showed... % DISCUSSION OF THE FIRST PAPER
+
+In a second paper by the same authors, they go on to discuss the CSLP in more detail, and in particular, applied to multigrid methods \cite{cslp2}.
+% DISCUSSION OF THE SECOND PAPER
+
+
+% ABSORBING BC
+% NEED REFERENCES ON ABC, DTN, PML(BERMUDEZ)
+
+The truncation of a computational domain
 
 
 
@@ -190,13 +216,14 @@ Chapter one, as you may have just finished reading, contains the introduction to
 This has hopefully given you, the reader, the modern and historical context of the problem of interest.
 
 The focus of chapter two is to develop the mathematical context of the problem.
-Here we will give the necessary mathematical overview and description of the 
+Here we will give the necessary mathematical overview and description of the problem and the derivation of equations.
 
 Chapter three aims to cover the finite element method in sufficient detail 
 Also covered are relevant references to the FEM implementation within \oomph.
 That is to say, how is the mathematical description of FEM transferred to an object-oriented code able to solve PDEs numerically.
 
 Chapter four will cover the mathematics of multigrid.
+In particular, we discuss the application of multigrid in finding the finite element solution to our Helmholtz equation.
 
-Finally, the project will end with a discussion of the results and concluding remarks in chapters six and seven.
-Here, a summary of findings and an overview of the work completed in the project will be given.
+Finally, the project will end with a discussion of the results and concluding remarks in chapters six and seven, respectively.
+A summary of findings and an overview of the work completed in the project will be given.
