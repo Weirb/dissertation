@@ -259,13 +259,16 @@ For the full Fourier decomposed Helmholtz equation, recall equation \eqref{eqn:f
 	\frac{\partial^2 u_N}{\partial r^2}
 			 + \frac{1}{r} \frac{\partial u_N}{\partial r}
 			 + \frac{\partial^2 u_N}{\partial z^2}
-			 + (k^2 - \frac{N^2}{r^2}) = 0. \label{eqn:full_fhh}
+			 + (k^2 - \frac{N^2}{r^2})u_N = 0. \label{eqn:full_fhh}
 \end{align}
 
 Before any theoretical work to attempt to remedy issues arising from variable coefficients, we should first be certain that a problem exists with multigrid applied to the cylindrical problem.
-
-Computing a solution using multigrid
-The analysis of 
+Since the implementation of multigrid within \oomph exists for the Cartesian case, we can begin here.
+With some slight modifications, the same code can be used to solve the problem in cylinderical coordinates.
+% Mention the changes made?
+Running the modified code to compute a solution resulted in a failure.
+The general error was lack of convergence in the FGMRES solver.
+To deduce the precide nature of the error, more analysis of the problem is necessary.
 
 
 
@@ -277,12 +280,16 @@ The analysis of
 % 	1/r^2 varies close to the origin
 
 We present a simplification of the variable coefficient problem to identify issues with the method.
-Consider the one dimensional, variable coefficient problem,
+Consider the one dimensional, variable coefficient problem on the domain $\left[a,b\right]$,
 \begin{align}
-	u''(r) + \frac{1}{r}u'(r) = f(r). \label{eqn:model}
+	u''(r) + \frac{1}{r}u'(r) = f(r), \label{eqn:model}
 \end{align}
-This equation represents the first two terms in \eqref{eqn:full_fhh}.
-The coefficient of $u'(r)$ varies by the inverse of radial distance.
+with dirichlet boundary conditions given by
+\begin{align}
+	u(a)=\alpha, \qquad \qquad u(b)=\beta.
+\end{align}
+This equation represents the first two terms, the radial part, in \eqref{eqn:full_fhh}.
+The coefficient of $u'(r)$ varies by the inverse of the radial distance from the origin.
 
 The simplifications made in this equation
 Reducing the dimension to one, dropping all but two terms
@@ -295,18 +302,30 @@ Same order equation.
 
 The solution to the homogeneous equation is 
 \begin{align}
-	u_h(r) = A \log(r) + B
+	u_h(r) = A \log(r) + B.
 \end{align}
+The solution to the full nonhomogeneous equation can be found using your favourite method.
 
 $1/r$ changes rapidly close to the origin, and as we move away from 0, the change becomes less signficicant.
 
-
-To solve this model problem, the equation was discretised using a finite difference scheme.
-% We use a finite difference scheme because 
-The stencil for solving this equation is given by
+% We use a finite difference scheme because?
+To solve this model problem, we discretise the equation using a finite difference scheme.
+First, we discretise the domain to generate a mesh with $N+2$ points, letting $j=0,1,\ldots,N+1$ index the mesh.
 \begin{align}
-	% stencil
+	h &= \frac{1}{N+1}, \qquad u_0 = \alpha, \qquad u_{N+1} = \beta \\
+	x_j &= a + jh, \qquad j=1,2,\ldots,N \\
+	u_j &= u(x_j), \qquad j=1,2,\ldots,N \\
+	f_j &= f(x_j), \qquad j=1,2,\ldots,N
 \end{align}
+
+Next, we discretise the equation.
+We use a second order centered difference for the second order term and a first order forward difference for the first order term.
+This leads to the stencil
+\begin{align}
+	\frac{u_{j+1} - 2u_{j} + u_{j-1}}{h^2} + \frac{1}{jh}\frac{u_{j+1}-u_{j}}{h} = f_j, \qquad j=1,2,\ldots,N.
+\end{align}
+
+
 We then implement a multigrid solver in Python, adapted from the code developed in \cite{weir}.
 
 To compare to a baseline, we also solve the constant coefficient problem,
@@ -317,6 +336,20 @@ This is the one dimensional Poisson equation, and as mentioned above is solved w
 
 The results show...
 
+\begin{table}[h]
+	\centering
+	\begingroup
+	\renewcommand*{\arraystretch}{1.5}
+	\begin{tabular}{c|c|c}
+		col1 & col2 & col3 \\ \hline
+		col1 & col2 & col3 \\
+		col1 & col2 & col3 \\
+	\end{tabular}
+	\endgroup
+	\caption{Results for model problem}
+\end{table}
+
+The figure below...
 
 \begin{figure}[h]
 	% Show how multigrid behaves for the above equation.
