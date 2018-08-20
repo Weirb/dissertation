@@ -33,22 +33,98 @@ In our case, this is FGMRES, however any appropriate iterative solver will be su
 
 \subsection{Multigrid cycles}
 
-Multigrid, as an iterative solver
+Multigrid, as an iterative solver, involves performing cycles to reduce the residual in the problem.
+The multigrid algorithm iteratively applies one of these cycles until a suitable convergence tolerance is reached.
+The most common multigrid cycle is the V-cycle, and besides the two-grid method, it is the simplest to implement.
+However there are many more cycles, each of which is a variation of the basic two-grid algorithm.
+For example, other cycles include the W-cycle, F-cycle, and S-cycles.
 
-The most common cycles are the V and W-cycles, however there are many more variations of the basic two-grid algorithm, among which are the F and S-cycles.
-Notably, beyond the two-grid method, the V-cycle is the simplest in its symmetry.
+Figure \ref{fig:mgcycles} shows a representation of how a single iteration of different cycles are applied.
+The cycle begins on the first mesh.
+Arrows pointing up indicate a prolongation to a finer mesh, and pointing down, a restriction to a coarser mesh.
+On each mesh, smoothing is also performed.
+A discussion of each of these components of the multigrid algorithm now follows.
 
-The multigrid algorithm consists of iteratively applying one of these cycles until a suitable convergence tolerance is reached.
-As mentioned above, the 
 
-
-
-\begin{figure}
-	% Insert figures of the grid hierarchy for 2-grid, V-cycle, etc.
-	% This figure uses dots, same as undergraduate figure
+\begin{figure}[h]
 	\centering
-	\includegraphics[draft]{images/placeholder}
-	\caption{V-cycle, W-cycle, F-cycle, S-cycle}
+	\subfloat[][\label{vcycle} V-cycle]{
+	\begin{tikzpicture}[baseline]
+	\def \n {2}
+	\def \w {0.5}
+	\def \r {0.9}
+	\def \scale {0.8}
+	\begin{scope}
+		\foreach \x in {\n,...,1} {
+		\node at (-\x*\w,\x) [circle,fill=black,scale=\scale] {};
+		\draw [arrow] (-\x*\w,\x) -- (-\x*\w+\r*\w,\x-\r);
+		}
+		\foreach \x in {1,...,\n} {
+		\node at (\x*\w,\x) [circle,fill=black,scale=\scale] {};
+		}
+			\foreach \x in {1,...,1} {
+			\draw [arrow] (\x*\w,\x) -- (\x*\w+\r*\w, \x+\r);
+		}
+		\node at (0,0) [circle,fill=black,scale=\scale] {};
+		\draw [arrow] (0,0) -- (\r*\w, \r);
+	\end{scope}
+	\end{tikzpicture}}
+	\hfill
+	\subfloat[][\label{wcycle} W-cycle]{
+	\begin{tikzpicture}[baseline]
+	\def \n {2}
+	\def \w {0.5}
+	\def \r {0.9}
+	\def \scale {0.8}
+	\begin{scope}
+		\foreach \x in {\n,...,1} {
+		\node at (-\x*\w,\x) [circle,fill=black,scale=\scale] {};
+		\draw [arrow] (-\x*\w,\x) -- (-\x*\w+\r*\w, \x-\r);
+		}
+		\foreach \x in {0,...,\n} {
+		\node at (2*\w + \x*\w,\x) [circle,fill=black,scale=\scale] {};
+		}
+			\foreach \x in {0,...,1} {
+			\draw [arrow] (2*\w + \x*\w,\x) -- (2*\w + \x*\w+\r*\w, \x+\r);
+		}
+		\node at (0,0) [circle,fill=black,scale=\scale] {};
+		\draw [arrow] (0,0) -- (\r*\w, \r);
+		\node at (\w,1) [circle,fill=black,scale=\scale]{};
+		\draw [arrow] (\w,1) -- (2*\w, 1-\r);
+		
+	\end{scope}
+
+	\end{tikzpicture}}
+	\hfill
+	\subfloat[][\label{fmgcycle} F-cycle (full multigrid)]{
+	\begin{tikzpicture}[baseline]
+	\def \n {3}
+	\def \w {0.5}
+	\def \r {0.9}
+	\def \scale {0.8}
+	\begin{scope}
+		
+		\node at (0,0) [circle,fill=black,scale=\scale] {};
+		\node at (\w,1) [circle,fill=black,scale=\scale] {};
+		\node at (2*\w,0) [circle,fill=black,scale=\scale] {};
+		\node at (3*\w,1) [circle,fill=black,scale=\scale] {};
+		\node at (4*\w,2) [circle,fill=black,scale=\scale] {};
+		\node at (5*\w,1) [circle,fill=black,scale=\scale] {};
+		\node at (6*\w,0) [circle,fill=black,scale=\scale] {};
+		\node at (7*\w,1) [circle,fill=black,scale=\scale] {};
+		\node at (8*\w,2) [circle,fill=black,scale=\scale] {};
+		
+		\draw [arrow] (0,0) -- (\w, \r);
+		\draw [arrow] (\w,1) -- (2*\w, 1-\r);
+		\draw [arrow] (2*\w,0) -- (3*\w, \r);
+		\draw [arrow] (3*\w,1) -- (4*\w, 1+\r);
+		\draw [arrow] (4*\w, 2) -- (5*\w, 2-\r);
+		\draw [arrow] (5*\w, 1) -- (6*\w, 1-\r);
+		\draw [arrow] (6*\w, 0) -- (7*\w, \r);
+		\draw [arrow] (7*\w, 1) -- (8*\w, 1+\r);
+	\end{scope}
+	\end{tikzpicture}}
+	\caption{\label{fig:mgcycles} Examples of multigrid cycles on a sequence of meshes with three levels.}
 \end{figure}
 
 
@@ -85,6 +161,8 @@ For example, in the case of a V or W-cycle, both pre-smoothing and post-smoothin
 However, in the case of an S-cycle, no pre-smoothing operations are performed, and only post-smoothing is applied.
 For certain problems, this can improve performance because of the reduction of the smoothing operations \cite{iyengar}.
 
+
+\cite{elman}
 The particular choice of smoother in \oomph is between the complex damped Jacobi method and GMRES.
 Alternatively, one could choose to implement their own smoother to override the default behaviour.
 Generally speaking, 
@@ -92,22 +170,15 @@ Generally speaking,
 In this paper, the results and analysis are obtained from using the GMRES solver.
 
 
-\subsubsection{FGMRES}
-
-In general, Krylov subspace methods should not be used for smoothing operations.
-This is because of their property that...
-
-Hence, the standard GMRES method is not a suitable choice of smoother.
-Because of this, the flexible version of the GMRES algorithm, appropriately named FGMRES, may be used instead.
-This method was proposed by Saad \cite{fgmres}, 
-
-
-
 
 
 \subsection{Prolongation and restriction}
 
-Prolongation, sometimes known as interpolation, is the process of transferring data up a level from a coarse grid to a finer grid.
+The procedures for transferring solution data between mesh levels are known as prolongation and restriction.
+These operators are built 
+
+Prolongation, otherwise known as interpolation, is the process of transferring data up a level from a coarse grid to a finer grid.
+This is done in general by sampling known values to interpolate the unknowns.
 
 Let $\Omega^h$ and $\Omega^{2h}$ be the meshes on the fine and coarse levels, respectively, and let $V^{h}$ and $V^{2h}$ be the finite element spaces on their respective meshes.
 Since $\Omega^{h}$ is obtained through refinement of $\Omega^{2h}$, we have that $V^{2h}\subset V^h$.
@@ -116,37 +187,93 @@ Then we can define the canonical prolongation operator \cite{volker},
 	I^h_{2h} \, : \, V^{2h} \rightarrow V^h.
 \end{align}
 
+As an alternative view of the transfer operator above, we can consider the operator acting on nodal values instead of acting on the members of the finite element space.
+Using this approach, if the coarse mesh with a grid resolution $2h$ has $n$ total nodes, and the fine mesh with a grid resolution of $h$ has $m$ total nodes, then
+\begin{align}
+	I^h_{2h} \, : \, R^m \rightarrow R^n.
+\end{align}
 
-This operator can often be represented by a matrix in 
-
-The simplest method of prolongation is an averaging procedure, which linearly interpolates the values in
-
-This is done by sampling
-
-% How does oomph-lib do it?
-
+One possible method of prolongation is an averaging procedure, which linearly interpolates unknown values between the known values.
+In this case, the transfer matrix may be represented 
+\begin{align}
+	I^h_{2h} = \begin{pmatrix}
+		1 \\ 2 \\ 1 & 1 \\ & 2 \\ & 1
+	\end{pmatrix}.
+\end{align}
 
 
 Restriction, sometimes known as coarsening or injection, is the `inverse' operation to prolongation.
+That is, in the sense that restriction operations perform the opposite action to prolongation.
 This process transfers data down a grid level from a fine grid to a coarser grid.
 
-The simplest restriction operation is the injection, which 
-
-
-As above, let 
-
-
-% Transpose of prolongation
-% Many choices, no need to use inverse of prolongation
-% Also called coarsening
+Using the notation as above, we can define the canonical restriction operators \cite{volker},
+\begin{align}
+	I^{2h}_h \, : \, V^{h} \rightarrow V^{2h}.
+\end{align}
 
 
 
-\begin{figure}
-	% Show the process of moving up/down the levels, using dots again
+On any given mesh level, applying first a restriction then a prolongation, or a prolongation then a restriction, will result in the mesh level remaining constant.
+However, it is not necessarily true that the solution data will remain the same.
+Since the prolongation operator interpolates data values, certainly there will be some discrepancy in the final result.
+
+Figure \ref{fig:pro_res_ops} is a representation of how the transfer matrices act on points in the mesh.
+
+
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[baseline]
+	\begin{scope}
+	
+	\def \w {6}
+	\def \scale {0.8}
+	
+	\node[draw] at (-2,3) {Restriction};
+	\node[draw] at (\w+2,0) {Prolongation};
+	\draw [arrow] (-2,2.5) -- (-2, 0);
+	\draw [arrow] (\w+2,0.5) -- (\w+2, 3);
+	
+	\foreach \x in {0,...,8}{
+		\node at (\w/8*\x, 3) [circle,fill=black,scale=\scale] {};
+	}
+	\foreach \x in {0,...,4}{
+		\node at (\w/4*\x, 1.5) [circle,fill=black,scale=\scale] {};
+	}
+	\foreach \x in {0,...,2}{
+		\node at (\w/2*\x, 0) [circle,fill=black,scale=\scale] {};
+	}
+	\draw [arrow] (0,0) -- (\w, 0);
+	\draw [arrow] (0,1.5) -- (\w, 1.5);
+	\draw [arrow] (0,3) -- (\w, 3);
+	
+	\end{scope}
+	\end{tikzpicture}
+	
+	\caption{\label{fig:pro_res_ops} Prolongation and restriction operators moving between mesh levels.}
+\end{figure}
+
+
+
+Two transfer operators are required for each mesh level, except for on the finest and coarsest levels.
+Instead, a restriction for the coarsest level and a prolongation the matrix is not needed.
+All of these are created in the setup phase of the algorithm.
+The algorithm used in the \oomph implementation of operator creation process is described below.
+
+To move from a coarse mesh to a fine mesh:
+1. Create the fine mesh
+2. For each element in the fine mesh
+3. For each node in the element
+4. Get the local coordinates of the node
+5. Interpolate the value of the solution using the coarse mesh solution value and basis functions
+6. End loops
+
+Once the prolongation matrix has been created, the restriction matrix is then defined to be the transpose of the prolongation matrix.
+Figure \ref{fig:create_prolong_matrix} shows how solution data for a uniform refinement of a single element is performed.
+
+\begin{figure}[h]
 	\centering
 	\includegraphics[draft]{images/placeholder}
-	\caption{Prolongation and restriction operators acting on sample points}
+	\caption{Prolongation matrix creation process. \label{fig:create_prolong_matrix}}
 \end{figure}
 
 
@@ -162,7 +289,7 @@ The grid hierarchy used by multigrid in \oomph is generated by...
 
 
 
-\begin{figure}
+\begin{figure}[h]
 	% Show initial refinement, want to show how the hierarchy is created within oomph-lib
 	\centering
 	\includegraphics[draft]{images/placeholder}
@@ -185,19 +312,30 @@ We want to solve the linear system
 \begin{align}
 	A x = b.
 \end{align}
+This equation is generated from the finite element discretisation of the problem.
+Linear systems of equations are everywhere, so there are a choice of several different methods to use to solve.
 Direct methods are too costly to use since in general, the dimension of the problem is large.
 Iterative methods, such as Krylov subspace methods, are a good alternative to use.
 However the performance of such methods is poor without a preconditioner.
-Hence, we would like a method that improves the performance of the iterative method.
-
+Hence, we would like a preconditioner that improves the performance of the iterative method.
 
 Applying a preconditioning matrix $P$ on the left, we have
 \begin{align}
-	P^{-1} A x = P^{-1} b \label{eqn:precond}
+	P^{-1} A x = P^{-1} b, \label{eqn:precond_left}
 \end{align}
 which solves the above system exactly for the case $P=A^{-1}$. 
 This is optimal as it solves the original problem, however it is costly to obtain.
-Instead, we would like a alternative such that $P$ is cheap to find and the preconditioned system \eqref{eqn:precond} is easier to solve than the original problem.
+Instead, we would like a alternative such that $P$ is cheap to find and the preconditioned system \eqref{eqn:precond_left} is easier to solve than the original problem.
+
+Alternatively, a preconditioning matrix can be applied on the right.
+In this case, we have
+\begin{align}
+	A P^{-1} P x = b. \label{eqn:precond_right}
+\end{align}
+This can be solved in two steps, 
+\begin{align}
+	P x = y, \qquad \qquad A P^{-1} y = b.
+\end{align}
 
 
 Many general preconditioning techniques have been developed that work for a wide variety of problems.
@@ -213,6 +351,25 @@ Only in the case where optimisation is crucial to the problem or a general preco
 
 % Talk about block preconditioning in regards to complex Helmholtz problem
 % The block structure, derivation...
+% Enumeration of the unknowns and equations. Real part first, imaginary part second
+
+As mentioned in chapter \ref{sec:problem}, the Helmholtz equation we are interested in is complex-valued.
+Since \oomph does not natively handle complex arithmetic, complex numbers are instead stored as 2D vectors.
+The first component of the vector is the real part of the complex number, and the second component is the imaginary part.
+
+For a specific enumeration of the unknowns, we obtain a matrix whose structure allows us to solve the problem more efficiently.
+In our case, we first compute the contribution for all of the real unknowns, then the contribution for the imaginary unknowns.
+This gives rise to a Jacobian matrix with block structure
+\begin{align}
+	A = \begin{pmatrix}
+		A_r & -A_c \\ A_c & A_r
+	\end{pmatrix}.
+\end{align}
+Here, $A_r$ is the real part of the discretisation and $A_c$ is the imaginary part.
+
+Given this matrix with a block structure, we will want to use a block preconditioner as our preconditioning matrix.
+
+
 
 
 \subsection{Multigrid preconditioning}
@@ -223,8 +380,27 @@ This gives an effective method
 On its own, the linear solver is not as effective as the preconditioned linear solver.
 
 
-
 We reduce the tolerance of the mg solver and 
+
+
+
+
+
+\subsection{FGMRES}
+
+Multigrid preconditioning leads to a variable preconditioner.
+That is, between iterations, the preconditioning matrix changes.
+
+Because of this, the standard GMRES method is not a suitable choice of smoother.
+Instead, the flexible version of the GMRES algorithm, appropriately named FGMRES, may be used instead.
+
+Only capable of preconditioning on the right
+
+
+This method was proposed by Saad in \cite{fgmres}.
+For a more detailed description of the FGMRES algorithm, readers are directed to this paper.
+
+
 
 
 
@@ -269,6 +445,7 @@ With some slight modifications, the same code can be used to solve the problem i
 Running the modified code to compute a solution resulted in a failure.
 The general error was lack of convergence in the FGMRES solver.
 To deduce the precide nature of the error, more analysis of the problem is necessary.
+
 
 
 
@@ -326,7 +503,7 @@ This leads to the stencil
 \end{align}
 
 
-We then implement a multigrid solver in Python, adapted from the code developed in \cite{weir}.
+We then extend a previous implementation of a multigrid solver, adapted from the code developed in \cite{weir}.
 
 To compare to a baseline, we also solve the constant coefficient problem,
 \begin{align}
@@ -334,7 +511,7 @@ To compare to a baseline, we also solve the constant coefficient problem,
 \end{align}
 This is the one dimensional Poisson equation, and as mentioned above is solved well by multigrid.
 
-The results show...
+The results in table \ref{tab:model} show...
 
 \begin{table}[h]
 	\centering
@@ -346,19 +523,21 @@ The results show...
 		col1 & col2 & col3 \\
 	\end{tabular}
 	\endgroup
-	\caption{Results for model problem}
+	\caption{Results for model problem. \label{tab:model}}
 \end{table}
 
-The figure below...
+Figure \ref{fig:model} below...
 
 \begin{figure}[h]
-	% Show how multigrid behaves for the above equation.
-	% Need to decide on 
+	% Show the iteration count increasing
 	\centering
-	\includegraphics[draft]{images/placeholder}
-	\caption{Convergence analysis of multigrid applied to equation \eqref{eqn:model}}
-\end{figure}
+	\subfloat[Iteration counts.]{\includegraphics[draft]{images/placeholder}}
 
+	% Residuals and errors
+	% \includegraphics[draft]{images/placeholder}
+	\subfloat[Residuals and absolute and relative errors.]{\includegraphics[draft]{images/placeholder}}
+	\caption{Convergence results for multigrid applied to equation \eqref{eqn:model}. \label{fig:model}}
+\end{figure}
 
 
 
