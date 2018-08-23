@@ -40,7 +40,7 @@ we may write the real-valued solution as
 where $U(x,y,z)$ is a complex-valued function \cite{oomph_hh}.
 Substituting this into \eqref{eqn:wave}, we obtain the Helmholtz equation
 \begin{equation}
-	\nabla^2 U(x,y,z) + k^2 u(x,y,z) = 0, \label{eqn:hh}
+	\nabla^2 U(x,y,z) + k^2 U(x,y,z) = 0, \label{eqn:hh}
 \end{equation}
 where $k=\omega/c$ is the wavenumber.
 
@@ -50,23 +50,43 @@ The mapping between Cartesian coordinates $(x,y,z)$ and cylindrical polar coordi
 	y &= r\sin(\varphi), \\
 	z &= z.
 \end{align}
+The Jacobian of this mapping is given by
+\begin{align}
+	J = \left\vert \frac{\partial(x,y,z)}{\partial(r,\varphi,z)} \right\vert = r.
+\end{align}
 
-This transforms our equation from $U(x,y,z)$ into $U(r,\varphi,z)$, 
-which we may decompose into Fourier components $u_N(r,z)$ around the $\varphi$ axis, so that
+This mapping transforms our equation from $U(x,y,z)$ into $U(r,\varphi,z)$, 
+which we may decompose into its Fourier components $u_N(r,z)$ around the $\varphi$ axis, so that
 \begin{equation}
-	U(r,\varphi,z) = \sum_{N=-\infty}^\infty u_N(r,z) e^{iN\varphi}.
+	U(r,\varphi,z) = \sum_{N=-\infty}^\infty u_N(r,z) e^{iN\varphi}. \label{eqn:full_eqn}
 \end{equation}
-By linearity of the Helmholtz equation, for each $N$, $u_N$ must satisfy the Helmholtz equation.
+By linearity of the Helmholtz equation, for each $N$, $u_N(r,z)$ must satisfy the Helmholtz equation.
+This allows us to solve for each $N$ individually and then combine the solutions to form a full solution.
 
 The Laplacian in cylindrical coordinates is given by
-\[
+\begin{align}
 	\nabla^2 = \frac{\partial^2 }{\partial r^2}
 			 + \frac{1}{r} \frac{\partial }{\partial r}
 			 + \frac{1}{r^2} \frac{\partial^2 }{\partial \varphi^2}
-			 + \frac{\partial^2 }{\partial z^2}
-\]
+			 + \frac{\partial^2 }{\partial z^2}. \label{eqn:laplacian}
+\end{align}
+We also define the reduced Laplacian in cylindrical coordinates, consisting of only partial derivatives with respect to $r$ and $z$.
+\begin{align}
+	\nabla^2 = \frac{\partial^2 }{\partial r^2}
+			 + \frac{1}{r} \frac{\partial }{\partial r}
+			 + \frac{\partial^2 }{\partial z^2}. \label{eqn:laplacian_reduced}
+\end{align}
+It is not necessary to distinguish between the two operators \eqref{eqn:laplacian} and \eqref{eqn:laplacian_reduced}.
+In the case of a function in $(r,\varphi,z)$, then the full cylindrical Laplacian is required.
+Alternatively, for a function in $(r,z)$, the reduced cylindrical Laplacian is appropriate.
+Therefore it should be implicit from the context of the equation.
 
-Splitting the Laplacian into terms not containing derivatives with respect to $\varphi$,
+Hence above, we wish to extract those terms consisting of $\varphi$ from \eqref{eqn:full_eqn}.
+The partial derivatives with respect to $\varphi$ give
+\begin{align}
+	\frac{1}{r^2} \frac{\partial^2 }{\partial \varphi^2} \left( e^{i N \varphi}\right) = - \frac{N^2}{r^2} e^{i N \varphi}.
+\end{align}
+The full equation then becomes
 \begin{align}
 	\nabla^2 U(r,\varphi,z) 
 		&= \nabla^2 \left[\sum_{N=-\infty}^\infty u_N(r,z) e^{i N \varphi}\right] \\
@@ -75,10 +95,68 @@ Splitting the Laplacian into terms not containing derivatives with respect to $\
 								   \right] e^{i N \varphi}.
 \end{align}
 
+Since we can solve each term in the series separately, we can extract a single equation for each $N$.
 This gives us the Fourier decomposed Helmholtz equation,
 \begin{equation}
 	\nabla^2 u_N(r,z) + (k^2 - \frac{N^2}{r^2})u_N(r,z) = 0. \label{eqn:fhh}
 \end{equation}
+Now we have an equation in an axisymmetric domain, hence reducing the dimension of the problem.
+
+
+
+\subsection{The Poisson problem}
+
+In the case where $k=0$, the problem reduces to the Poisson problem.
+Taking $k=0$ in equation \eqref{eqn:fhh}, we obtain
+\begin{align}
+	\nabla^2 U(r,\varphi,z) = \nabla^2 u_N(r,z) - \frac{N^2}{r^2} u_N(r,z) = 0. \label{eqn:fp}
+\end{align}
+This is the Fourier decomposed Poisson equation in cylindrical coordinates.
+
+This equation is of interest because of the relation between the Helmholtz and Poisson equations.
+Since we are interested in how multigrid performs when solving \eqref{eqn:fhh}, we will compare results with related problems.
+
+Another related problem is the case when both $k=0$ and $N=0$.
+This is the Poisson equation in reduced coordinates, with a solution depending only on $r$ and $z$.
+To further aid in comparison between solutions, we will also consider this case.
+
+
+
+
+
+
+% ----------------------------------------
+
+\section{Problem domain}
+
+The full wave equation is defined in three spatial dimensions in cylindrical coordinates.
+It is possible to solve the full equation
+
+We consider the case where solutions are symmetric about the $z$ azis.
+Hence we are able to decompose the solution into its Fourier components in the azimuthal direction.
+By doing this, the dimension of the problem is reduced from three to two.
+This simplification aids in the 
+
+We introduce the Fourier wavenumber $N$ as an additional parameter to the system.
+
+
+Upon reducing the equation
+
+\begin{figure}[ht!]
+	% Need an example image of a 3d cylinder - the domain for the problem -- away from the 
+	% Also the 2d section of the cylinder
+	\centering
+	\subfloat[][Full cylindrical domain. \label{fig:full_domain}]{\includegraphics[draft]{images/placeholder}}\\
+	\subfloat[][Reduced dimensional domain. \label{fig:reduced_domain}]{\includegraphics[draft]{images/placeholder}}
+	\caption{Problem domain.\label{fig:problem_domain}}
+\end{figure}
+
+Figure \ref{fig:full_domain} represents an example of the domain in full 3D cylindrical coordinates.
+
+Figure \ref{fig:reduced_domain} shows the dimension reduction from the Fourier decomposition.
+
+The sharp edges at the corners of the domain are generally not a problem.
+Absorbing boundary conditions take care of that.
 
 
 
@@ -142,3 +220,88 @@ Hence,
 \end{align}
 
 Given a computational domain 
+
+
+
+
+
+% --------------------------------------
+
+\section{An analytical solution}
+
+In order to show that the computed solution of a numerical method is producing accurate results, a known solution is required to validate results.
+The axisymmetric domain
+
+Let us begin by assuming the existence of a separable solution,
+\begin{align}
+	u_N(r,z) = R(r)Z(z).
+\end{align}
+Substituting into \eqref{eqn:fhh}, we obtain
+\begin{align}
+	\left( \frac{\d^2 R(r)}{\d r^2} + \frac{1}{r} \frac{\d R(r)}{\d r} \right) Z(z) + \frac{\d^2 Z(z)}{\d z^2} R(r) + \left( k^2 - \frac{N^2}{r^2} \right) R(r) Z(z) = 0.
+\end{align}
+Dividing through by $R(r)Z(z)$, we can separate terms consisting of $r$ and $z$ on each side of the equation.
+\begin{align}
+	\left( \frac{\d^2 R(r)}{\d r^2} + \frac{1}{r} \frac{\d R(r)}{\d r} \right)\frac{1}{R(r)} + \left( k^2 - \frac{N^2}{r^2} \right) = - \frac{\d^2 Z(z)}{\d z^2} \frac{1}{Z(z)}.
+\end{align}
+Because both sides of this equation are equal expressions involving different variables, they must be equal to some constant, say $\lambda$, whose sign is yet to be determined.
+Hence, we obtain two ordinary differential equations in $r$ and in $z$.
+\begin{align}
+	&\frac{\d^2 Z(z)}{\d z^2} + \lambda Z(z) = 0. \label{eqn:Z}\\
+	&\frac{\d^2 R(r)}{\d r^2} + \frac{1}{r} \frac{\d R(r)}{\d r} + \left( k^2 + \lambda - \frac{N^2}{r^2} \right) R(r) = 0. \label{eqn:R}
+\end{align}
+
+
+First, we solve \eqref{eqn:R} for $R(r)$.
+Consider the change of variables
+\begin{align}
+	\tilde{r} = r \sqrt{k^2 + \lambda}.
+\end{align}
+By the chain rule, derivatives in $\tilde{r}$ become
+\begin{align}
+	\frac{\d R}{\d r} &= \frac{\d \tilde{r}}{\d r} \frac{\d R}{\d \tilde{r}} = \sqrt{k^2 + \lambda} \frac{\d R}{\d \tilde{r}} \\
+	\frac{\d^2 R}{\d r^2} &= \sqrt{k^2 + \lambda} \frac{\d}{\d \tilde{r}} \left[ \sqrt{k^2 + \lambda} \frac{\d R}{\d \tilde{r}} \right]
+							= \left(k^2 + \lambda\right) \frac{\d^2 R}{\d \tilde{r}^2}
+\end{align}
+Substituting into \eqref{eqn:R}, 
+\begin{align}
+	\left(k^2 + \lambda\right) \frac{\d^2 R(\tilde{r})}{\d \tilde{r}^2} + 
+	\frac{\left(k^2 + \lambda\right)}{\tilde{r}} \frac{\d R(\tilde{r})}{\d \tilde{r}} + 
+	\left(k^2 + \lambda\right) \left( 1 - \frac{N^2}{\tilde{r}^2} \right) R(\tilde{r}) = 0.
+\end{align}
+Upon cancelling factors, we have the final equation, which may be recognised as Bessel's differential equation.
+\begin{align}
+	\frac{\d^2 R(\tilde{r})}{\d \tilde{r}^2} + 
+	\frac{1}{\tilde{r}} \frac{\d R(\tilde{r})}{\d \tilde{r}} + 
+	\left( 1 - \frac{N^2}{\tilde{r}^2} \right) R(\tilde{r}) = 0. \label{eqn:bessel_de}
+\end{align}
+The solution to \eqref{eqn:bessel_de} is a linear combination of Bessel functions of order $N$, and whose argument is $\tilde{r}=r \sqrt{k^2 + \lambda}$.
+\begin{align}
+	R(r) = c_1 J_N \left( r \sqrt{k^2 + \lambda} \right) + c_2 Y_N \left( r \sqrt{k^2 + \lambda} \right)
+\end{align}
+
+
+Now we turn to the solution of \eqref{eqn:Z}.
+The form of the solution of $Z(z)$ is depending on the sign of $\lambda$.
+Let $\mu$ be a positive real number.
+If the sign is negative so that $\lambda=-\mu^2$, then $Z(z)$ is a linear combination of hyperbolic sine and cosine,
+\begin{align}
+	Z(z) = c_3 \sinh(\mu z) + c_4 \cosh(\mu z).
+\end{align}
+On the other hand, if the sign is positive, so that $\lambda=\mu^2$, then $Z(z)$ is a linear combination of sine and cosine,
+\begin{align}
+	Z(z) = c_3 \sin(\mu z) + c_4 \cos(\mu z).
+\end{align}
+Finally, if $\lambda=0$, then $Z(z)$ is the equation of a straight line,
+\begin{align}
+	Z(z) = c_3 z + c_4.
+\end{align}
+
+For the sake of simplicity, we can specify that $\lambda=0$.
+We have then for the full general solution,
+\begin{align}
+	u_N(r,z) = R(r)Z(z) = \left( c_1 J_N \left( k r \right) + c_2 Y_N \left( k r \right) \right) \left( c_3 z + c_4 \right),
+\end{align}
+for any given constants $c_1,c_2,c_4,c_4$.
+
+% We may simplify this expression further, by noting that up to a rescaling of constants, the sum of the Bessel functions can be written as Hankel functions
