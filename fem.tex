@@ -7,7 +7,9 @@ From the website, \oomph is:
 	an object-oriented, open-source finite-element library for the simulation of multi-physics problems. \cite{oomph}
 \end{quote}
 There are several high level features of any general finite element procedure that will be addressed below.
+Discussing these features in generality allows 
 In addition to this, an overview of specific implementation details and features available in \oomph will also be covered.
+
 
 
 
@@ -47,10 +49,21 @@ consists of those functions that are square-integrable and have a square-integra
 
 \section{Nodes, elements, and meshes}
 
+The main components of a finite element procedure are the nodes, the elements, and the mesh.
 A mesh is a collection of elements; an element is a collection of nodes.
 
-The building blocks of the FEM are surely the elements themselves, for which the method is named.
+Each node contains data about its location within 
+
 The elements are the 
+
+How do we get from global to local coordinates?
+We need the mapping
+And with that we need the Jacobian of the mapping
+(we have two change of coordinates: Cartesian -> Cylindrical -> Local
+And so we have two Jacobian mappings)
+
+On the elements we have defined basis functions.
+These represent the function 
 
 Together with the elements, other fundamental pieces of the FEM are the nodes and the mesh.
 Every element consists of multiple nodal points, each of which holds data required for solving the problem.
@@ -72,8 +85,16 @@ Furthermore, classes may be extended using inheritance, allowing for highly abst
 This works to both developers and users of the library advantage.
 Developers are able to work independently of each other, knowing only how their respective objects should interact.
 Users are able to extend previous work to suit their own needs.
-
 Further discussion of OOP design principles is irrelevant and outside of the scope of this project.
+
+
+
+
+
+\subsection{The Galerkin method}
+
+In the Galerkin method, the test functions are the element basis functions.
+
 
 
 
@@ -82,39 +103,60 @@ Further discussion of OOP design principles is irrelevant and outside of the sco
 
 \section{Weak formulation}
 
-The classical or strong formulation of a differential equation
-The weak form of a differential equation is a relaxation of the conditions for the existence of a solution to the equation.
+The classical or strong formulation of a differential equation is a solution $u_N$ satisfying the PDE and boundary condition at every point in the domain.
+
+
+The weak form of a differential equation is a relaxation of the conditions for the existence of a solution to the differential equation.
+
+A weak solution $u_N$ satisfies the essential (Dirichlet) boundary condition and that the weighted residual vanishes for any test function that is 0 on the essential boundary.
+
+Instead, upon multiplying by a test function and integrating over the domain, we instead require that the equation is satisfied for all test functions from an appropriate space of test functions.
+
+
+A sufficiently smooth solution satisfying the weak form will also satisfies the stong form.
+Therefore the two statements of the problem are equivalent, given the smoothness requirements of the classical formulation.
+
 
 Given a test function $v$ from some function space $V$, we multiply our equation by $v$ and integrate over the domain.
 
-
-
-It is also needed that the test function satisfies the 
+The smoothness requirements for the strong form 
 
 
 
-Recall our PDE, the Fourier decomposed Helmholtz equation, \eqref{eqn:fhh}.
-We will now derive the weak form of this equation as described above. Firstly by multiplying by a test function $v \in V$, then integrating over the domain $\Omega$.
-For all $v \in V$,
+We will now derive the weak form of the CSLP equation, \eqref{eqn:cslp}.
+Our first step is to multiply by a test function $v\in V$ and integrate over the domain $\Omega$.
 \begin{align}
-	-\int_\Omega \left(\nabla^2 u_N + \left(k^2-\frac{N^2}{r^2}\right)u_N \right) v = 0.
+	-\int_\Omega \left(\nabla^2 u_N + \left[ (1+i\alpha)k^2-\frac{N^2}{r^2}\right]u_N \right) v = 0.
 \end{align}
-Using the product rule for the gradient operator $\nabla$, we rewrite the higher order derivatives as a sum of lower order terms.
+Using the property of the gradient operator,
 \begin{align}
-	-\int_\Omega \nabla \cdot \left( v \nabla u_N \right) - \nabla u_N \cdot \nabla v + \left(k^2-\frac{N^2}{r^2}\right)u_N v = 0.
+	\nabla \cdot ( v \nabla u) = v \nabla^2 u + \nabla u \cdot \nabla v,
 \end{align}
-Finally, the use of the of the divergence theorem yields
+we arrive at
 \begin{align}
-	\int_\Omega \nabla u_N \cdot \nabla v - \left(k^2 - \frac{N^2}{r^2}\right) \int_\Omega u_N v - \int_{\partial\Omega} v \frac{\partial u_N}{\partial \vec{n}} = 0.
+	\int_\Omega \nabla u_N \cdot \nabla v 
+  - \int_\Omega \nabla \cdot (v \nabla u ) 
+  - (1+i\alpha)k^2 \int_\Omega u_N v 
+  - N^2 \int_\Omega \frac{1}{r^2} u_N v = 0.
 \end{align}
-where $\vec{n}$ is the outward facing normal vector from the boundary $\partial \Omega$.
 
+Using the Gauss-Divergence theorem, we may write the second term as an integral over the boundary of the domain, $\partial \Omega$,
+\begin{align}
+	\int_\Omega \nabla \cdot (v \nabla u ) = \int_{\partial\Omega} v \frac{\partial u_N}{\partial \vec{n}},
+\end{align}
+where $\vec{n}$ is the outward facing normal vector from the boundary, and
+\begin{align}
+	\frac{\partial u_N}{\partial \vec{n}} 
+\end{align}
+is the normal derivative.
 The boundary integral may be further split up into parts sorted by their respective boundary conditions.
 If the portion of the boundary whose solution value is known is represented by $\partial \Omega_D$ and the remaining boundary is represented as $\partial \Omega_N$, then
+\begin{subequations}
 \begin{align}
 	\partial \Omega_D \cup \partial \Omega_N &= \partial \Omega. \\
 	\partial \Omega_D \cap \partial \Omega_N &= \emptyset.
 \end{align}
+\end{subequations}
 Given these exclusivity properties on the boundary, we may write the term for the boundary integral as
 \begin{align}
 	\int_{\partial\Omega} = \int_{\partial\Omega_D} + \int_{\partial\Omega_N}.
@@ -124,11 +166,25 @@ Since the test functions are exactly 0 on the Dirichlet portion of the boundary,
 	\int_{\partial\Omega_D} v \frac{\partial u_N}{\partial \vec{n}} = 0.
 \end{align}
 
-The final step in the weak formulation of our equation results in
+Combining the results
 \begin{align}
-	\int_\Omega \nabla u_N \cdot \nabla v - \left(k^2 - \frac{N^2}{r^2}\right) \int_\Omega u_N v - \int_{\partial\Omega_N} v \frac{\partial u_N}{\partial \vec{n}} = 0,
+	\int_\Omega \nabla u_N \cdot \nabla v 
+  - \int_{\partial\Omega_N} \nabla \cdot (v \nabla u ) 
+  - (1+i\alpha)k^2 \int_\Omega u_N v 
+  - N^2 \int_\Omega \frac{1}{r^2} u_N v = 0. \label{eqn:weakform}
 \end{align}
-for all test functions $v\in V$.
+
+
+One further point regarding the implementation of this within \oomph.
+Complex numbers are not handled natively within \oomph.
+Instead, a two-dimensional vector whose first and second components store the real and imaginary parts of a complex number, respectively.
+Therefore to deal with this, we split the solution $u_N$ into its real and imaginary components.
+If $u_r$ is the real part of the solution and $u_c$ is the imaginary part, then
+\begin{align}
+	u_N = u_r + i u_c.
+\end{align}
+Substituting this into \eqref{eqn:weakform} and separating real and imaginary parts is sufficient for the implementation.
+
 
 
 
@@ -137,7 +193,7 @@ for all test functions $v\in V$.
 
 % ----------------------------------------------------------
 
-\subsection{Discretisation of boundary conditions}
+\section{Discretisation of boundary conditions}
 
 \iffalse 
 What are the boundary conditions that we have?
@@ -148,33 +204,46 @@ How do we discretise these?
 
 
 
+% ----------------------------------------------------------
 
+\section{Numerical integration}
 
+The integrals involved in computing the solution are often too complicated evaluate analytically.
+Instead, we use a numerical integration scheme to perform the integration.
+Several methods exist to complete this task, but within \oomph, it is done using Gauss quadrature.
 
-\section{Galerkin method}
+\cite{oomph}
+Fix the dimension to be 2, so that we can talk specifics...
+The Gauss rules are defined by following three quantities:
+\begin{enumerate}
+	\item the number of integration points, $N_\mathrm{int}$,
+	\item the position of the integration points within an element, $S_i, \, i=1,2,\ldots,N_\mathrm{int}$,
+	\item the integration weights, $W_i, \, i=1,2,\ldots,N_\mathrm{int}$.
+\end{enumerate} 
+Given these values, we can approximate an integral by summation of the integrand evaluated at the integration points multiplied by the corresponding integration weight.
 
-In the Galerkin method, the test functions are the element basis functions.
-This has the advantage that no 
+We also must multiply by the Jacobian of the mapping from Cartesian to cylindrical coordinates.
+Recall equation \eqref{eqn:cylindrical_mapping}, which states that the Jacobian of this transformation is $r$.
+In addition, we have the transformation from global to local coordinates.
+This mapping is given by some other function
 
-
-
-
-
-\section{Rayleigh-Ritz method}
-
-As an alternative to the Galerkin method presented above, we briefly present another formulation of the finite element method.
-The Rayleigh-Ritz method begins with a functional, instead of the weak form.
-Solving the differential equation $Lu=f$ is formally equivalent to minimising the functional
+Denote by $J$ the Jacobian of the mapping from global to local coordinates, then for an arbitrary element $E$, 
 \begin{align}
-	F(u) = \frac{1}{2}\left( Lu, u \right) - \left( f, u \right).
+	\iint_E f(r,z) r \,\d r \,\d z = \int_{-1}^1 \int_{-1}^1  f(s_1, s_2) J \, \d s_1 \, \d s_2 = \sum_{i=1}^{N_\mathrm{int}} f(S_{i,1},S_{i,2}) 
 \end{align}
 
-The two methods coincide when the linear operator $L$ is positive and self-adjoint and the function $F$ is quadratic.
 
 
 
 
 
-\section{Putting it all together}
 
-Once the equations have been 
+
+
+% ---------------------------------
+
+\section{Newton's method}
+
+Put it all together
+Solve the full system
+Solve the Jacobian, blah...
