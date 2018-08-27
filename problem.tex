@@ -52,7 +52,7 @@ The mapping between Cartesian coordinates $(x,y,z)$ and cylindrical polar coordi
 \end{align}
 The Jacobian of this mapping is given by
 \begin{align}
-	J = \left\vert \frac{\partial(x,y,z)}{\partial(r,\varphi,z)} \right\vert = r.
+	J = \left\vert \frac{\partial(x,y,z)}{\partial(r,\varphi,z)} \right\vert = r. \label{eqn:cylindrical_mapping}
 \end{align}
 
 This mapping transforms our equation from $U(x,y,z)$ into $U(r,\varphi,z)$, 
@@ -129,8 +129,28 @@ To further aid in comparison between solutions, we will also consider this case.
 
 \section{Complex-shifted Laplacian}
 
+As mentioned above, there are some difficulities in solving the Helmholtz equation using multigrid.
+That is especially the case for even moderate values of $k^2$.
+Work has been done by several authors in order to overcome this shortcoming of multigrid <<CITATION>>.
+This is done by introducing a shift to the $k^2$ term in the Helmholtz operator into the complex plane.
+
+In Cartesian coordinates, the Laplacian operator with a complex shift is
+\begin{align}
+	\mathcal{L}_{CSLP} = \nabla^2 + (1 + i \alpha ) k^2,  \label{eqn:cslp}
+\end{align}
+where $\alpha$ is a positive real number controlling the offset from the real axis.
+
+In cylindrical coordinates, we obtain the same equation with the shift applied to the $k^2$ term.
+Therefore, in our Fourier decomposed cylindrical coordinates, we have
+\begin{align}
+	\nabla^2 u_N(r,z) + \left[ \left( 1 + i \alpha \right) k^2 - \frac{N^2}{r^2} \right] u_N(r,z) = 0.
+\end{align}
 
 
+% SOME MORE DISCUSSION ABOUT THE CSLP
+% WHAT VALUE OF ALPHA DO WE CHOOSE?
+% WHAT WERE THE RESULTS FROM THE PAPER GIVEN
+% HOW DOES IT BEHAVE IN CARTESIAN/CYLINDRICAL FROM LITERATURE
 
 
 
@@ -243,7 +263,8 @@ Given a computational domain
 \section{An analytical solution}
 
 In order to show that the computed solution of a numerical method is producing accurate results, a known solution is required to validate results.
-The axisymmetric domain
+The 3D axisymmetric domain reduces to a 2D rectangle that sweeps around the $z$-axis.
+Hence, we want to find an analytical solution on a rectangle in $r$ and $z$ coordinates.
 
 Let us begin by assuming the existence of a separable solution,
 \begin{align}
@@ -311,10 +332,15 @@ Finally, if $\lambda=0$, then $Z(z)$ is the equation of a straight line,
 \end{align}
 
 For the sake of simplicity, we can specify that $\lambda=0$.
-We have then for the full general solution,
+We have then for the full general solution for a single Fourier mode,
 \begin{align}
 	u_N(r,z) = R(r)Z(z) = \left( c_1 J_N \left( k r \right) + c_2 Y_N \left( k r \right) \right) \left( c_3 z + c_4 \right),
 \end{align}
 for any given constants $c_1,c_2,c_4,c_4$.
 
-% We may simplify this expression further, by noting that up to a rescaling of constants, the sum of the Bessel functions can be written as Hankel functions
+Since the only purpose of this exact solution is for validation of a correct implementation, we may choose the constants above freely.
+In doing so, we may then specify that the boundary conditions for the PDE must correspond with the exact solution.
+That is, since we know a priori the solution of the equation, we let the boundary conditions be exactly the value of the solution on the boundary.
+This has the benefit of finding the solution we have found above for us to check the method against.
+Although this has the distinct disadvantage that we do not make use of any boundary conditions besides Dirichlet.
+We will address this at a later with the introduction of Neumann and Sommerfeld boundary conditions.
