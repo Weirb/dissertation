@@ -1,4 +1,94 @@
 \chapter{Results}
 
+\def\figwidth{0.7\columnwidth}
 
 
+What results did we gather?
+What machine did we use?
+
+Need a general discussion for each
+
+
+
+\begin{figure}
+    \centering
+    
+    \pgfplotstableread{
+    1 2.03073e-06
+    0.5 2.54252e-07
+    0.25 3.17945e-08
+    0.125 3.97473e-09
+    0.0625 4.96869e-10
+    }\datatable
+
+    \begin{tikzpicture}
+        \centering
+    \begin{loglogaxis}[
+    xlabel={$h$},
+    ylabel={Error},
+    xmin=0.01, xmax=1.1,
+    grid=major,
+    width=\figwidth
+    % /pgfplots/log ticks with fixed point,
+    ]
+    
+    \addplot [only marks,fill=black] table {\datatable};
+
+    \addplot table[y={create col/linear regression={y=1}}] {\datatable} 
+    coordinate [pos=0.8] (A)
+    coordinate [pos=0.3] (B);
+
+    \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
+    \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
+    node [pos=0.25, anchor=south] {1} % label the horizontal line
+    node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
+    ;
+
+    % \addlegendentry{$\pgfmathprintnumber{\pgfplotstableregressiona}$}
+
+    \end{loglogaxis}
+    \end{tikzpicture}
+    \caption{This is a figure.}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    
+    \pgfplotstableread{
+    1 2.03073e-06
+    0.5 2.54252e-07
+    0.25 3.17945e-08
+    0.125 3.97473e-09
+    0.0625 4.96869e-10
+    }\datatable
+
+    \begin{tikzpicture}
+        \centering
+    \begin{loglogaxis}[
+    xlabel={$h$},
+    ylabel={Error},
+    xmin=0.01, xmax=1.1,
+    grid=major,
+    width=\figwidth
+    % /pgfplots/log ticks with fixed point,
+    ]
+    
+    \addplot [only marks,fill=black] table {\datatable};
+
+    \addplot table[y={create col/linear regression={y=1}}] {\datatable} 
+    coordinate [pos=0.8] (A)
+    coordinate [pos=0.3] (B);
+
+    \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
+    \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
+    node [pos=0.25, anchor=south] {1} % label the horizontal line
+    node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
+    ;
+
+    % \addlegendentry{$\pgfmathprintnumber{\pgfplotstableregressiona}$}
+
+    \end{loglogaxis}
+    \end{tikzpicture}
+    \caption{This is a figure.}
+\end{figure}

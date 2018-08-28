@@ -1,4 +1,5 @@
 \chapter{The finite element method}
+\label{sec:fem}
 
 This chapter discusses the well known and widely used method for solving partial differential equations, the finite element method (FEM).
 To avoid building and adding another library to the already vast ecosystem of available FEM software, we use the multi-physics FEM library, \oomph.
@@ -55,6 +56,8 @@ A mesh is a collection of elements; an element is a collection of nodes.
 Each node contains data about its location within 
 
 The elements are the 
+
+What is the order of the element?
 
 How do we get from global to local coordinates?
 We need the mapping
@@ -231,6 +234,23 @@ Denote by $J$ the Jacobian of the mapping from global to local coordinates, then
 \begin{align}
 	\iint_E f(r,z) r \,\d r \,\d z = \int_{-1}^1 \int_{-1}^1  f(s_1, s_2) J \, \d s_1 \, \d s_2 = \sum_{i=1}^{N_\mathrm{int}} f(S_{i,1},S_{i,2}) 
 \end{align}
+
+
+
+
+
+
+% ---------------------------------
+
+\section{Refinement}
+
+How are the meshes created?
+What is the process of refinement?
+	Adaptive vs uniform
+Hanging nodes..
+p-refinement: order of the elements
+h-refinement: density/size of the mesh
+Use this to generate the grids for Multigrid
 
 
 

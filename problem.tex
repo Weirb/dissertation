@@ -1,4 +1,4 @@
-\chapter{Problem description}
+\chapter{The problem}
 \label{sec:problem}
 
 \iffalse
@@ -23,8 +23,18 @@ Helmholtz problem:
 	- Indefinite discretisation matrix
 \fi
 
-We wish to solve the three dimensional Helmholtz equation in Fourier decomposed axisymmetric cylindrical coordinates.
-Let us derive the discretisation by finite elements starting from the wave equation in Cartesian coordinates.
+We wish to solve the Helmholtz equation in cylindrical coordinates in an unbounded three-dimensional domain, with symmetry about the $z$-axis.
+Exploiting the symmetry of the domain allows us to decompose the solution into its Fourier components.
+This has the advantage that the problem reduces to two dimensions.
+
+In this chapter, we will derive the formal statement of the problem starting from the wave equation.
+Also included here is a discussion of the topics relevant to the practical solution of the problem.
+The outcome of this chapter should be the starting point for the finite element discretisation in chapter \ref{sec:fem}.
+
+
+
+
+% ------------------------------
 
 \section{Problem derivation}
 
@@ -100,7 +110,10 @@ This gives us the Fourier decomposed Helmholtz equation,
 \begin{equation}
 	\nabla^2 u_N(r,z) + (k^2 - \frac{N^2}{r^2})u_N(r,z) = 0. \label{eqn:fhh}
 \end{equation}
-Now we have an equation in an axisymmetric domain, hence reducing the dimension of the problem.
+
+The standard Helmholtz equation is classified by a single parameter, the wavenumber $k$.
+Decomposing the solution into Fourier components, we introduce the Fourier wavenumber $N$ as an additional parameter to the system.
+These two parameters together classify solutions for the problem.
 
 
 
@@ -113,7 +126,7 @@ Taking $k=0$ in equation \eqref{eqn:fhh}, we obtain
 \end{align}
 This is the Fourier decomposed Poisson equation in cylindrical coordinates.
 
-This equation is of interest because of the relation between the Helmholtz and Poisson equations.
+The Poisson equation is of interest because of the close relation between the Helmholtz and Poisson equations.
 Since we are interested in how multigrid performs when solving \eqref{eqn:fhh}, we will compare results with related problems.
 
 Another related problem is the case when both $k=0$ and $N=0$.
@@ -125,55 +138,46 @@ To further aid in comparison between solutions, we will also consider this case.
 
 
 
-% ----------------------------------------
-
-\section{Complex-shifted Laplacian}
-
-As mentioned above, there are some difficulities in solving the Helmholtz equation using multigrid.
-That is especially the case for even moderate values of $k^2$.
-Work has been done by several authors in order to overcome this shortcoming of multigrid <<CITATION>>.
-This is done by introducing a shift to the $k^2$ term in the Helmholtz operator into the complex plane.
-
-In Cartesian coordinates, the Laplacian operator with a complex shift is
-\begin{align}
-	\mathcal{L}_{CSLP} = \nabla^2 + (1 + i \alpha ) k^2,  \label{eqn:cslp}
-\end{align}
-where $\alpha$ is a positive real number controlling the offset from the real axis.
-
-In cylindrical coordinates, we obtain the same equation with the shift applied to the $k^2$ term.
-Therefore, in our Fourier decomposed cylindrical coordinates, we have
-\begin{align}
-	\nabla^2 u_N(r,z) + \left[ \left( 1 + i \alpha \right) k^2 - \frac{N^2}{r^2} \right] u_N(r,z) = 0.
-\end{align}
-
-
-% SOME MORE DISCUSSION ABOUT THE CSLP
-% WHAT VALUE OF ALPHA DO WE CHOOSE?
-% WHAT WERE THE RESULTS FROM THE PAPER GIVEN
-% HOW DOES IT BEHAVE IN CARTESIAN/CYLINDRICAL FROM LITERATURE
-
-
-
-
-
 
 
 % ----------------------------------------
 
-\section{Problem domain}
+\section{Domain and boundary conditions}
 
-The full wave equation is defined in three spatial dimensions in cylindrical coordinates.
-It is possible to solve the full equation
+The full wave equation \eqref{eqn:wave} is defined in three spatial dimensions and one temporal dimension.
+Given the assumptions above, in particular the time-harmonic solution and the axisymmetric domain, we reduce the problem to two spacial dimensions.
+Figure \ref{fig:full_domain} represents an example of the domain in full 3D cylindrical coordinates.
+On the other hand, figure \ref{fig:reduced_domain} shows the resulting domain after dimension reduction from the Fourier decomposition.
+This simplification aids in the computational work by reducing the number of degrees of freedom of the problem.
+It is only a matter of post-processing the solution to obtain the full 3D solution from the reduced computed solution, as nothing is lost due to symmetry.
 
-We consider the case where solutions are symmetric about the $z$ azis.
-Hence we are able to decompose the solution into its Fourier components in the azimuthal direction.
-By doing this, the dimension of the problem is reduced from three to two.
-This simplification aids in the 
+To complete the problem formulation, boundary conditions must also be specified for the PDE.
+Since our equation is of elliptic type, any appropriate Dirichlet, Neumann, or Robin conditions will suffice.
+Each boundary condition has its own physical interpretation, and therefore influences the solution differently.
 
-We introduce the Fourier wavenumber $N$ as an additional parameter to the system.
+As waves propagate through a medium, they may eventually arrive at a boundary, or continue travelling through space unimpeded.
 
 
-Upon reducing the equation
+When a wave meets a boundary, depending on the boundary material properties, 
+
+
+
+
+
+% The sharp edges at the corners of the domain are generally not a problem.
+% Absorbing boundary conditions take care of that.
+
+
+
+
+
+In addition to the boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique since the domain of the problem is infinite.
+The Sommerfeld radiation condition
+\[
+\lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0, \label{eqn:sommerfeld}
+\]
+achieves this by ensuring that sources scatter to infinity and do not come from infinity \cite{sommerfeld}.
+
 
 \begin{figure}[ht!]
 	% Need an example image of a 3d cylinder - the domain for the problem -- away from the 
@@ -183,30 +187,6 @@ Upon reducing the equation
 	\subfloat[][Reduced dimensional domain. \label{fig:reduced_domain}]{\includegraphics[draft]{images/placeholder}}
 	\caption{Problem domain.\label{fig:problem_domain}}
 \end{figure}
-
-Figure \ref{fig:full_domain} represents an example of the domain in full 3D cylindrical coordinates.
-
-Figure \ref{fig:reduced_domain} shows the dimension reduction from the Fourier decomposition.
-
-The sharp edges at the corners of the domain are generally not a problem.
-Absorbing boundary conditions take care of that.
-
-
-
-
-
-% ----------------------------------------
-
-\section{Boundary conditions}
-
-To complete the problem formulation, boundary conditions must also be specified for the PDE.
-Since our equation is of elliptic type, any appropriate Dirichlet, Neumann, or Robin conditions will suffice.
-In addition to the boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique since the domain of the problem is infinite.
-The Sommerfeld radiation condition
-\[
-\lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0,
-\]
-achieves this by ensuring that sources scatter to infinity and do not come from infinity \cite{sommerfeld}.
 
 
 
@@ -253,6 +233,47 @@ Hence,
 \end{align}
 
 Given a computational domain 
+
+
+
+
+
+
+
+
+% ----------------------------------------
+
+\section{Complex-shifted Laplacian}
+
+As mentioned above, there are some difficulities in solving the Helmholtz equation using multigrid.
+That is especially the case for even moderate values of $k^2$.
+Work has been done by several authors in order to overcome this shortcoming of multigrid <<CITATION>>.
+This is done by introducing a shift to the $k^2$ term in the Helmholtz operator into the complex plane.
+
+In Cartesian coordinates, the Laplacian operator with a complex shift is
+\begin{align}
+	\mathcal{L}_{CSLP} = \nabla^2 + (1 + i \alpha ) k^2,  \label{eqn:cslp}
+\end{align}
+where $\alpha$ is a positive real number controlling the offset from the real axis.
+
+In cylindrical coordinates, we obtain the same equation with the shift applied to the $k^2$ term.
+Therefore, in our Fourier decomposed cylindrical coordinates, we have
+\begin{align}
+	\nabla^2 u_N(r,z) + \left[ \left( 1 + i \alpha \right) k^2 - \frac{N^2}{r^2} \right] u_N(r,z) = 0.
+\end{align}
+
+
+The optimal value of $\alpha$ is determined in \cite{cslp2}
+
+
+
+
+% SOME MORE DISCUSSION ABOUT THE CSLP
+% WHAT VALUE OF ALPHA DO WE CHOOSE?
+% WHAT WERE THE RESULTS FROM THE PAPER GIVEN
+% HOW DOES IT BEHAVE IN CARTESIAN/CYLINDRICAL FROM LITERATURE
+
+
 
 
 
