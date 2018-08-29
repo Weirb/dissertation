@@ -8,18 +8,43 @@ What machine did we use?
 
 Need a general discussion for each
 
+Increasing $N$ causes issues for both multigrid and superlu.
+Multigrid behaves worse, but both still don't work.
+Can rectify this by shifting the computational domain away from the $z$-axis.
+
+
+Solutions below were found on a square domain, $[1,2]\times [1,2]$.
+
+\begin{figure}
+    \centering
+
+    \begin{tikzpicture}
+    \centering
+    \begin{loglogaxis}[
+    xlabel={Degrees of freedom},
+    ylabel={Time taken to solve (s)},
+    grid=major,
+    width=\figwidth
+    ]
+    
+    \addplot [color=black] table [x index=1, y index=0] {data/helmholtz_mg_time.dat};
+    \addlegendentry{Multigrid}
+
+    \addplot [color=red] table [x index=1, y index=0] {data/helmholtz_superlu_time.dat};
+    \addlegendentry{SuperLU}
+
+    \end{loglogaxis}
+    \end{tikzpicture}
+    \caption{Time taken to solve the Helmholtz equation with $k=100$ and $N=5$.}
+\end{figure}
+
+
+
+
 
 
 \begin{figure}
     \centering
-    
-    \pgfplotstableread{
-    1 2.03073e-06
-    0.5 2.54252e-07
-    0.25 3.17945e-08
-    0.125 3.97473e-09
-    0.0625 4.96869e-10
-    }\datatable
 
     \begin{tikzpicture}
         \centering
@@ -32,9 +57,9 @@ Need a general discussion for each
     % /pgfplots/log ticks with fixed point,
     ]
     
-    \addplot [only marks,fill=black] table {\datatable};
+    \addplot [only marks,fill=black] table {poisson.dat};
 
-    \addplot table[y={create col/linear regression={y=1}}] {\datatable} 
+    \addplot table[y={create col/linear regression={y=1}}] {poisson.dat} 
     coordinate [pos=0.8] (A)
     coordinate [pos=0.3] (B);
 
@@ -48,20 +73,12 @@ Need a general discussion for each
 
     \end{loglogaxis}
     \end{tikzpicture}
-    \caption{This is a figure.}
+    \caption{Solving the Poisson problem with multigrid, $k=0,N=3$.}
 \end{figure}
 
 
 \begin{figure}
     \centering
-    
-    \pgfplotstableread{
-    1 2.03073e-06
-    0.5 2.54252e-07
-    0.25 3.17945e-08
-    0.125 3.97473e-09
-    0.0625 4.96869e-10
-    }\datatable
 
     \begin{tikzpicture}
         \centering
@@ -74,9 +91,9 @@ Need a general discussion for each
     % /pgfplots/log ticks with fixed point,
     ]
     
-    \addplot [only marks,fill=black] table {\datatable};
+    \addplot [only marks,fill=black] table {helmholtz.dat};
 
-    \addplot table[y={create col/linear regression={y=1}}] {\datatable} 
+    \addplot table[y={create col/linear regression={y=1}}] {helmholtz.dat} 
     coordinate [pos=0.8] (A)
     coordinate [pos=0.3] (B);
 
@@ -90,5 +107,5 @@ Need a general discussion for each
 
     \end{loglogaxis}
     \end{tikzpicture}
-    \caption{This is a figure.}
+    \caption{Solving the Helmhotlz problem with multigrid, $k=10,N=3$.}
 \end{figure}
