@@ -24,23 +24,60 @@ Solutions below were found on a square domain, $[1,2]\times [1,2]$.
     xlabel={Degrees of freedom},
     ylabel={Time taken to solve (s)},
     grid=major,
-    width=\figwidth
+    width=\figwidth,
+	legend style={at={(0.02,0.98)}, anchor=north west}
     ]
     
-    \addplot [color=black] table [x index=1, y index=0] {data/helmholtz_mg_time.dat};
+    \addplot [color=black, mark=x] table [x index=1, y index=0] {data/helmholtz_mg_time.dat};
     \addlegendentry{Multigrid}
 
-    \addplot [color=red] table [x index=1, y index=0] {data/helmholtz_superlu_time.dat};
+    \addplot [color=red, mark=x] table [x index=1, y index=0] {data/helmholtz_superlu_time.dat};
     \addlegendentry{SuperLU}
 
+	
+
     \end{loglogaxis}
     \end{tikzpicture}
-    \caption{Time taken to solve the Helmholtz equation with $k=100$ and $N=5$.}
+    \caption{Time taken to solve the Helmholtz equation with $k^2=100$ and $N=5$.}
 \end{figure}
 
 
 
 
+
+
+%\begin{figure}
+%    \centering
+%
+%    \begin{tikzpicture}
+%        \centering
+%    \begin{loglogaxis}[
+%    xlabel={$h$},
+%    ylabel={Error},
+%    xmin=0.01, xmax=1.1,
+%    grid=major,
+%    width=\figwidth
+%    % /pgfplots/log ticks with fixed point,
+%    ]
+%    
+%    \addplot [only marks,fill=black] table {poisson.dat};
+%
+%    \addplot table[y={create col/linear regression={y=1}}] {poisson.dat} 
+%    coordinate [pos=0.8] (A)
+%    coordinate [pos=0.3] (B);
+%
+%    \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
+%    \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
+%    node [pos=0.25, anchor=south] {1} % label the horizontal line
+%    node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
+%    ;
+%
+%    % \addlegendentry{$\pgfmathprintnumber{\pgfplotstableregressiona}$}
+%
+%    \end{loglogaxis}
+%    \end{tikzpicture}
+%    \caption{Solving the Poisson problem with multigrid, $k=0,N=3$.}
+%\end{figure}
 
 
 \begin{figure}
@@ -57,9 +94,9 @@ Solutions below were found on a square domain, $[1,2]\times [1,2]$.
     % /pgfplots/log ticks with fixed point,
     ]
     
-    \addplot [only marks,fill=black] table {poisson.dat};
+    \addplot [only marks,fill=black] table {data/helmholtz_error.dat};
 
-    \addplot table[y={create col/linear regression={y=1}}] {poisson.dat} 
+    \addplot table[y={create col/linear regression={y=1}}] {data/helmholtz_error.dat} 
     coordinate [pos=0.8] (A)
     coordinate [pos=0.3] (B);
 
@@ -73,39 +110,5 @@ Solutions below were found on a square domain, $[1,2]\times [1,2]$.
 
     \end{loglogaxis}
     \end{tikzpicture}
-    \caption{Solving the Poisson problem with multigrid, $k=0,N=3$.}
-\end{figure}
-
-
-\begin{figure}
-    \centering
-
-    \begin{tikzpicture}
-        \centering
-    \begin{loglogaxis}[
-    xlabel={$h$},
-    ylabel={Error},
-    xmin=0.01, xmax=1.1,
-    grid=major,
-    width=\figwidth
-    % /pgfplots/log ticks with fixed point,
-    ]
-    
-    \addplot [only marks,fill=black] table {helmholtz.dat};
-
-    \addplot table[y={create col/linear regression={y=1}}] {helmholtz.dat} 
-    coordinate [pos=0.8] (A)
-    coordinate [pos=0.3] (B);
-
-    \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
-    \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
-    node [pos=0.25, anchor=south] {1} % label the horizontal line
-    node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
-    ;
-
-    % \addlegendentry{$\pgfmathprintnumber{\pgfplotstableregressiona}$}
-
-    \end{loglogaxis}
-    \end{tikzpicture}
-    \caption{Solving the Helmhotlz problem with multigrid, $k=10,N=3$.}
+    \caption{Solving the Helmholtz problem with multigrid, $k^2=100,N=5$.}
 \end{figure}
