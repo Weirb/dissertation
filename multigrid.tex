@@ -193,13 +193,6 @@ Using this approach, if the coarse mesh with a grid resolution $2h$ has $n$ tota
 	I^h_{2h} \, : \, R^m \rightarrow R^n.
 \end{align}
 
-One possible method of prolongation is an averaging procedure, which linearly interpolates unknown values between the known values.
-In this case, the transfer matrix may be represented 
-\begin{align}
-	I^h_{2h} = \begin{pmatrix}
-		1 \\ 2 \\ 1 & 1 \\ & 2 \\ & 1
-	\end{pmatrix}.
-\end{align}
 
 
 Restriction, sometimes known as coarsening or injection, is the `inverse' operation to prolongation.
@@ -222,32 +215,42 @@ Figure \ref{fig:pro_res_ops} is a representation of how the transfer matrices ac
 
 \begin{figure}[h]
 	\centering
-	\begin{tikzpicture}[baseline]
+	\scalebox{0.4}{
+	\begin{tikzpicture}[baseline,decoration={markings,mark=at position 0.08 with
+		{\arrow[scale=5,>=stealth]{<}}}]
+	\centering
 	\begin{scope}
 	
-	\def \w {6}
-	\def \scale {0.8}
+	% define constants
+	\def \w {8}
+	\def \d {4}
+	\def \textoff {3}
+	\def \r {6}
 	
-	\node[draw] at (-2,3) {Restriction};
-	\node[draw] at (\w+2,0) {Prolongation};
-	\draw [arrow] (-2,2.5) -- (-2, 0);
-	\draw [arrow] (\w+2,0.5) -- (\w+2, 3);
+	% Draw the grids
+	\draw[step=2,black,very thin] (0,0) grid (\w,\w);
+	\draw[step=4,black,very thin] (\w+\d,0) grid (2*\w+\d,8);
+	\draw[step=8,black,very thin] (2*\w+2*\d,0) grid (3*\w+2*\d,8);
 	
-	\foreach \x in {0,...,8}{
-		\node at (\w/8*\x, 3) [circle,fill=black,scale=\scale] {};
-	}
-	\foreach \x in {0,...,4}{
-		\node at (\w/4*\x, 1.5) [circle,fill=black,scale=\scale] {};
-	}
-	\foreach \x in {0,...,2}{
-		\node at (\w/2*\x, 0) [circle,fill=black,scale=\scale] {};
-	}
-	\draw [arrow] (0,0) -- (\w, 0);
-	\draw [arrow] (0,1.5) -- (\w, 1.5);
-	\draw [arrow] (0,3) -- (\w, 3);
+	% First text
+	\node[anchor=center,scale=2.5] at (\w+\d/2,\w+\textoff) {Restriction};
+	\node[anchor=center,scale=2.5] at (\w+\d/2.1,-\textoff) {Prolongation};
+	
+	% Second text
+	\node[anchor=center,scale=2.5] at (2*\w+1.5*\d,\w+\textoff) {Restriction};
+	\node[anchor=center,scale=2.5] at (2*\w+1.5*\d,-\textoff) {Prolongation};
+	
+	% Top arrows
+	\draw[postaction={decorate}] (\w+\d+\r/4,\w+0.5) arc (55:125:\r);
+	\draw[postaction={decorate}] (2*\w+2*\d+\r/4,\w+0.5) arc (55:125:\r);
+	
+	% Bottom arrows
+	\draw[postaction={decorate}] (\w-\r/4,-0.5) arc (180+55:180+125:\r);
+	\draw[postaction={decorate}] (2*\w+\d-\r/4,-0.5) arc (180+55:180+125:\r);
 	
 	\end{scope}
 	\end{tikzpicture}
+	}
 	
 	\caption{\label{fig:pro_res_ops} Prolongation and restriction operators moving between mesh levels.}
 \end{figure}
