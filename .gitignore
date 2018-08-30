@@ -10,3 +10,6 @@ build/
 *.fdb_latexmk
 *.gz
 
+# Ignore data folder
+logs/
+data/
