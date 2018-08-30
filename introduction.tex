@@ -173,6 +173,15 @@ The solutions of the time-independent equation represent steady state solutions.
 
 
 
+% General talk about absorbing boundary conditions for infinite domains.
+
+Perfectly matched layers (PML) are a method for handling infinite domains computationally, by damping or absorbing the wave-like solution in a layer outside of the region of interest.
+Without such a tool, the truncated domain acts like a hard boundary, causing reflections of the solution back onto the domain.
+These reflections are not physical, and so any solution found with these artifacts are useless for a physical model of waves.
+The use of a PML will instead absorb the 
+
+
+
 
 % --------------------------------------
 
