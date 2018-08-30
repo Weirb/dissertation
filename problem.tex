@@ -117,7 +117,52 @@ These two parameters together classify solutions for the problem.
 
 
 
-\subsection{Related problems and other issues}
+
+
+
+
+% ----------------------------------------
+
+\subsection{Complex-shifted Laplacian}
+
+As mentioned above, there are some difficulities in solving the Helmholtz equation using multigrid.
+That is especially the case for even moderate values of $k^2$.
+Work has been done by several authors in order to overcome this shortcoming of multigrid <<CITATION>>.
+This is done by introducing a shift to the $k^2$ term in the Helmholtz operator into the complex plane.
+
+In Cartesian coordinates, the Laplacian operator with a complex shift is
+\begin{align}
+	\mathcal{L}_{CSLP} = \nabla^2 + (1 + i \alpha ) k^2,  \label{eqn:cslp}
+\end{align}
+where $\alpha$ is a positive real number controlling the offset from the real axis.
+
+In cylindrical coordinates, we obtain the same equation with the shift applied to the $k^2$ term.
+Therefore, in our Fourier decomposed cylindrical coordinates, we have
+\begin{align}
+	\nabla^2 u_N(r,z) + \left[ \left( 1 + i \alpha \right) k^2 - \frac{N^2}{r^2} \right] u_N(r,z) = 0.
+\end{align}
+
+
+The optimal value of $\alpha$ is determined in \cite{cslp2}
+
+
+
+
+% SOME MORE DISCUSSION ABOUT THE CSLP
+% WHAT VALUE OF ALPHA DO WE CHOOSE?
+% WHAT WERE THE RESULTS FROM THE PAPER GIVEN
+% HOW DOES IT BEHAVE IN CARTESIAN/CYLINDRICAL FROM LITERATURE
+
+
+
+
+
+
+
+
+% ----------------------------------------
+
+\section{Related problems and other issues}
 
 In the case where $k=0$, the problem reduces to the Poisson problem.
 Taking $k=0$ in equation \eqref{eqn:fhh}, we obtain
@@ -324,41 +369,6 @@ Given a computational domain
 
 
 
-
-
-
-
-% ----------------------------------------
-
-\section{Complex-shifted Laplacian}
-
-As mentioned above, there are some difficulities in solving the Helmholtz equation using multigrid.
-That is especially the case for even moderate values of $k^2$.
-Work has been done by several authors in order to overcome this shortcoming of multigrid <<CITATION>>.
-This is done by introducing a shift to the $k^2$ term in the Helmholtz operator into the complex plane.
-
-In Cartesian coordinates, the Laplacian operator with a complex shift is
-\begin{align}
-	\mathcal{L}_{CSLP} = \nabla^2 + (1 + i \alpha ) k^2,  \label{eqn:cslp}
-\end{align}
-where $\alpha$ is a positive real number controlling the offset from the real axis.
-
-In cylindrical coordinates, we obtain the same equation with the shift applied to the $k^2$ term.
-Therefore, in our Fourier decomposed cylindrical coordinates, we have
-\begin{align}
-	\nabla^2 u_N(r,z) + \left[ \left( 1 + i \alpha \right) k^2 - \frac{N^2}{r^2} \right] u_N(r,z) = 0.
-\end{align}
-
-
-The optimal value of $\alpha$ is determined in \cite{cslp2}
-
-
-
-
-% SOME MORE DISCUSSION ABOUT THE CSLP
-% WHAT VALUE OF ALPHA DO WE CHOOSE?
-% WHAT WERE THE RESULTS FROM THE PAPER GIVEN
-% HOW DOES IT BEHAVE IN CARTESIAN/CYLINDRICAL FROM LITERATURE
 
 
 
