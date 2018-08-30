@@ -94,6 +94,51 @@ We would like to explore the performance of the solver for the Fourier decompose
 Following this, we will also examine the performance of the solver using PMLs to handle reflections on the discretised boundary.
 
 
+% General talk about preconditioning
+We want to solve the linear system
+\begin{align}
+	A x = b.
+\end{align}
+This equation is generated from the finite element discretisation of the problem.
+Linear systems of equations are everywhere, so there are a choice of several different methods to use to solve.
+Direct methods are too costly to use since in general, the dimension of the problem is large.
+Iterative methods, such as Krylov subspace methods, are a good alternative to use.
+However the performance of such methods is poor without a preconditioner.
+Hence, we would like a preconditioner that improves the performance of the iterative method.
+
+Applying a preconditioning matrix $P$ on the left, we have
+\begin{align}
+	P^{-1} A x = P^{-1} b, \label{eqn:precond_left}
+\end{align}
+which solves the above system exactly for the case $P=A^{-1}$. 
+This is optimal as it solves the original problem, however it is costly to obtain.
+Instead, we would like a alternative such that $P$ is cheap to find and the preconditioned system \eqref{eqn:precond_left} is easier to solve than the original problem.
+
+Alternatively, a preconditioning matrix can be applied on the right.
+In this case, we have
+\begin{align}
+	A P^{-1} P x = b. \label{eqn:precond_right}
+\end{align}
+This can be solved in two steps, 
+\begin{align}
+	P x = y, \qquad \qquad A P^{-1} y = b.
+\end{align}
+
+
+Many general preconditioning techniques have been developed that work for a wide variety of problems.
+For example, preconditioning matrices based on the splitting of the matrix $A$ are simple to use and cheap to compute.
+More specific preconditioning techniques have been developed in the case of certain problems.
+These tend to be more complicated to use, but often will come with better performance.
+As a first attempt, it is a good idea to use a simple method to see the impact on the convergence times.
+Only in the case where optimisation is crucial to the problem or a general preconditioner does not work, a specific preconditioner should be developed.
+
+
+
+
+
+
+
+
 
 % \section{Historical background}
 % \iffalse
