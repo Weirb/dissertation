@@ -80,7 +80,7 @@ This allows the Krylov method, in this context known as a \textit{smoother}, to 
 
 The performance of multigrid methods is excellent for the related Poisson problem,
 \begin{equation}
-	\nabla^2 u = 0.
+	\nabla^2 u = f.
 \end{equation}
 Indeed, it is an optimal solver with time-complexity of $O(n)$ for a problem of size $n\times n$.
 For sufficiently small values of $k$, the Helmholtz equation is well approximated by Poisson's equation.
@@ -181,22 +181,6 @@ These reflections are not physical, and so any solution found with these artifac
 The use of a PML will instead absorb the 
 
 
-
-
-% --------------------------------------
-
-\section{Physical interpretations}
-
-\iffalse
-	An example of a physical context for the problem
-	Underwater
-	Seismology
-	Acoustics
-	In each case:
-		What does the solution represent?
-		What do the boundary conditions represent?
-		What is the state of the field for these applications? E.g. other applications to the same problem.
-\fi
 
 
 
