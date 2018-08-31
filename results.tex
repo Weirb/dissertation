@@ -13,11 +13,76 @@ Multigrid behaves worse, but both still don't work.
 Can rectify this by shifting the computational domain away from the $z$-axis.
 
 
-Solutions below were found on a square domain, $[1,2]\times [1,2]$.
+Solutions below were computed on a rectangular mesh of the problem domain, $\Omega = [1,2]\times [0,1]$.
+The elements used were linear, quadrilateral elements, consisting of four nodes each.
+
+The machine running the results
+
+
+
+% ------------------------------------
+
+\section{Solution}
+
+% Picture of the solution
+% Picture of the error (to show we solve the correct problem)
+% Brief discussion of the two, don't need to go on
+
+
+Blah blah the solution
+
+We can see from figure \ref{fig:sol_error} that increasing the resolution of the mesh decreases the error.
+Each additional level of initial refinement reduces the element width by a factor of two.
+The specific gradient of the line..
+
 
 \begin{figure}
     \centering
 
+    \begin{tikzpicture}
+        \centering
+    \begin{loglogaxis}[
+    xlabel={$h$},
+    ylabel={Error},
+    xmin=0.01, xmax=1.1,
+    grid=major,
+    width=\figwidth
+    ]
+    
+    % Plot the data
+    \addplot [only marks,fill=black] table {data/helmholtz_error.dat};
+
+    % Calculate gradient and draw the triangle
+    \addplot table[y={create col/linear regression={y=1}}] {data/helmholtz_error.dat} 
+    coordinate [pos=0.8] (A)
+    coordinate [pos=0.3] (B);
+    \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
+    \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
+    node [pos=0.25, anchor=south] {1} % label the horizontal line
+    node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
+    ;
+
+    \end{loglogaxis}
+    \end{tikzpicture}
+    \caption{\label{fig:sol_error} Behaviour of the error between the exact and computed solution by multigrid for the Helmholtz problem with $k^2=100,N=5$ for varying levels of initial refinement.}
+\end{figure}
+
+
+
+
+% ------------------------------------
+
+\section{Timings}
+
+
+
+
+\begin{figure}
+    
+    % Helmholtz equation 
+    % time vs #dofs
+
+    \centering
     \begin{tikzpicture}
     \centering
     \begin{loglogaxis}[
@@ -34,8 +99,6 @@ Solutions below were found on a square domain, $[1,2]\times [1,2]$.
     \addplot [color=red, mark=x] table [x index=1, y index=0] {data/helmholtz_superlu_time.dat};
     \addlegendentry{SuperLU}
 
-	
-
     \end{loglogaxis}
     \end{tikzpicture}
     \caption{Time taken to solve the Helmholtz equation with $k^2=100$ and $N=5$.}
@@ -45,70 +108,31 @@ Solutions below were found on a square domain, $[1,2]\times [1,2]$.
 
 
 
+% ------------------------------------
 
-%\begin{figure}
-%    \centering
-%
-%    \begin{tikzpicture}
-%        \centering
-%    \begin{loglogaxis}[
-%    xlabel={$h$},
-%    ylabel={Error},
-%    xmin=0.01, xmax=1.1,
-%    grid=major,
-%    width=\figwidth
-%    % /pgfplots/log ticks with fixed point,
-%    ]
-%    
-%    \addplot [only marks,fill=black] table {poisson.dat};
-%
-%    \addplot table[y={create col/linear regression={y=1}}] {poisson.dat} 
-%    coordinate [pos=0.8] (A)
-%    coordinate [pos=0.3] (B);
-%
-%    \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
-%    \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
-%    node [pos=0.25, anchor=south] {1} % label the horizontal line
-%    node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
-%    ;
-%
-%    % \addlegendentry{$\pgfmathprintnumber{\pgfplotstableregressiona}$}
-%
-%    \end{loglogaxis}
-%    \end{tikzpicture}
-%    \caption{Solving the Poisson problem with multigrid, $k=0,N=3$.}
-%\end{figure}
-
+\section{Iterations}
 
 \begin{figure}
-    \centering
-
-    \begin{tikzpicture}
-        \centering
-    \begin{loglogaxis}[
-    xlabel={$h$},
-    ylabel={Error},
-    xmin=0.01, xmax=1.1,
-    grid=major,
-    width=\figwidth
-    % /pgfplots/log ticks with fixed point,
-    ]
     
-    \addplot [only marks,fill=black] table {data/helmholtz_error.dat};
+    % Helmholtz equation 
+    % Iteration vs #dofs
 
-    \addplot table[y={create col/linear regression={y=1}}] {data/helmholtz_error.dat} 
-    coordinate [pos=0.8] (A)
-    coordinate [pos=0.3] (B);
+    \centering
+    \begin{tikzpicture}
+    \centering
+    \begin{axis}[
+    xlabel={Degrees of freedom},
+    ylabel={Number of iterations},
+    xmode=log,
+    grid=major,
+    width=\figwidth,
+	legend style={at={(0.02,0.98)}, anchor=north west}
+    ]
 
-    \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
-    \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
-    node [pos=0.25, anchor=south] {1} % label the horizontal line
-    node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
-    ;
+    \addplot [color=red, mark=x] table [x index=1, y index=0] {data/helmholtz_mg_iter.dat};
 
-    % \addlegendentry{$\pgfmathprintnumber{\pgfplotstableregressiona}$}
-
-    \end{loglogaxis}
+    \end{axis}
     \end{tikzpicture}
-    \caption{Solving the Helmholtz problem with multigrid, $k^2=100,N=5$.}
+    \caption{Number of FGMRES iterations against degrees of freedom, using multigrid as a preconditioner.}
 \end{figure}
+
