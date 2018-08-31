@@ -1,10 +1,19 @@
 \chapter{Conclusion}
 
 
-Further work
-- Check the method on non-Dirichlet bcs
-- Implement the PML for infinite domain
 
-- What about differently shaped domains?
-    We have only looked at axisymmetric cylinder (square)
+
+
+
+\section{Further work}
+
+Implement other boundary conditions, including absorbing boundary conditions using PML.
+The current implementation of the work only handles Dirichlet boundaries.
+This simplification was appropriate for initial work, but applications likely will involve non-essential boundaries.
+
+Increasing the Fourier wavenumber $N$ causes issues.
+This is likely because the variable coefficient term $N^2/r^2$ becomes more dominant.
+To remedy the issue, we shift the mesh to increase the minimum value of $r$ so that it is approximately equal to $N$.
+With an accompanying scaling of the equation, this solves the problem.
+Implementing a more robust method for handling large $N$ and an accompanying convergence study should also be performed.
 
