@@ -231,6 +231,7 @@ Denote by $J$ the Jacobian of the mapping from global to local coordinates, then
 
 \section{Refinement}
 
+\iffalse
 How are the meshes created?
 What is the process of refinement?
 	Adaptive vs uniform
@@ -238,8 +239,100 @@ Hanging nodes..
 p-refinement: order of the elements
 h-refinement: density/size of the mesh
 Use this to generate the grids for Multigrid
+\fi
+
+There are several variations of refinement that can improve the accuracy of the finite element solution.
+In addition to gains in solution accuracy, refinement is the method that we will generate the grid hierarchy for multigrid.
+This is done by performing multiple refinements to achieve the finest level of refinement, then unrefining to obtain each coarse level.
+More discussion of the grids used in multigrid is in chapter \ref{sec:mg}; here we will discuss the specific use of refinement within the FEM.
+The largest scale of the solution can be at most at the scale of the mesh, so often refinement is necessary to resolve the exact features of the solution.
+Each method of refinement comes with costs and benefits, as well as different complexities in implementation.
+
+% Uniform refinement
+The simplest case is uniform h-refinement.
+In h-refinement, elements are subdivided into multiple new elements, reducing the element width and increasing the resolution of the mesh.
+In uniform refinement, the entire mesh is refined by subdividing every element.
+This increases the storage and computational cost of the method, but leads to a reduction in the solution error.
+Figure \ref{fig:uniform} shows an example of a mesh consisting of four elements on the left and the result on the right after the application of uniform h-refinement.
+We can see here that each element has been split into four new elements, each with element width half of the original element.
+
+% Adaptive refinement
+Beyond uniform refinement is adaptive refinement.
+In certain cases where parts of the solution domain are singular or
+In problems such as those involving boundary layers, for example in fluid dynamics, the solution may be highly varying in only one specific region.
+By using an error estimator, it is possible to determine the areas of the mesh that require refinement.
+Using uniform refinement on this problem, the grid size of the mesh will be reduced across the whole mesh, increasing computational cost.
+Adaptive refinement has the benefit that computation is not wasted on computing the solution in regions where a sufficiently large mesh size is more appropriate.
+
+However, adaptive refinement can introduce hanging nodes to the mesh.
+Hanging nodes occur when a node is not shared between surrounding elements.
+The problem with this type of node is that inter-element continuity of the solution is lost.
+To overcome hanging nodes, we must impose constraints on the nodal values so that continuity between elements is maintained.
+We will focus only on uniform refinement in this project and not discuss further adaptive refinement.
+
+Figure \ref{fig:adaptive} shows an example of a mesh consisting of four elements on the left and the result on the right after the application of adaptive h-refinement.
+On the right mesh, the element in the top right corner has been refined, while the others remain the same.
+This has introduced two hanging nodes to the element, displayed here in red.
+
+Alternatively, there is also p-refinement.
+This method of refinement increases the order of the element by increasing the number of nodes.
+Recall that we can find an interpolating polynomial that passes through $n+1$ distinct points with a polynomial of degree $n$.
+So for example, if there are two nodes in a one-dimensional slice of an element, a linear polynomial can interpolate the solution between them.
+If the solution is highly nonlinear, increasing the order of the interpolating polynomial will decrease the interpolation error.
+Hence, increasing the number of nodes can lead to a reduction in the solution error.
+
+\begin{figure}[h]
+	% Uniform and adaptive refinement
+
+	\centering
+	
+	\subfloat[][\label{fig:uniform} Uniform refinement of a mesh.]{\scalebox{0.4}{
+		\begin{tikzpicture}[baseline,decoration={markings,mark=at position 1 with
+			{\arrow[scale=5,>=stealth]{>}}}]
+		\centering
+		\begin{scope}
+		
+		% define constants
+		\def \w {8}
+		\def \d {4}
+		
+		% Draw the grids
+		\draw[step=4,black,very thin] (0,0) grid (\w,\w);
+		\draw[postaction={decorate}] (\w+1,\w/2) -- (\w+\d-1,\w/2);
+
+		\draw[step=2,black,very thin] (\w+\d,0) grid (2*\w+\d,8);
+		
+		\end{scope}
+		\end{tikzpicture}
+	}}\\
+
+	\subfloat[][\label{fig:adaptive} Adaptive refinement of a mesh; hanging nodes are displayed in red.]{\scalebox{0.4}{
+		\begin{tikzpicture}[baseline,decoration={markings,mark=at position 1 with
+			{\arrow[scale=5,>=stealth]{>}}}]
+		\centering
+		\begin{scope}
+		
+		% define constants
+		\def \w {8}
+		\def \d {4}
+		
+		% Draw the grids
+		\draw[step=4,black,very thin] (0,0) grid (\w,\w);
+		\draw[postaction={decorate}] (\w+1,\w/2) -- (\w+\d-1,\w/2);
 
 
+		\draw[step=4,black,very thin] (\w+\d,0) grid (2*\w+\d,\w);
+		\draw[step=2,black,very thin] (1.5*\w+\d,\w/2) grid (2*\w+\d,\w);
+
+		\node [red,scale=2] at (1.5*\w+\d,0.75*\w) {\textbullet};
+		\node [red,scale=2] at (1.75*\w+\d,0.5*\w) {\textbullet};
+		
+		\end{scope}
+		\end{tikzpicture}
+	}}
+
+	\caption{\label{fig:refinement} An example of uniform and adaptive h-refinement on a mesh.}
+\end{figure}
 
 
 
