@@ -39,8 +39,8 @@ The classical or strong solution of a problem is a function $u_N(r,z)$ satisfyin
 \end{align}
 at every point in the domain $\Omega$ and satisfying the boundary conditions
 \begin{align}
-	u_N(r,z) \vert_{\partial \Omega_D} = g_D \\
-	\frac{\partial u_N(r,z)}{\partial \vec{n}} \vert_{\partial \Omega_N} = g_N
+	\left. u_N(r,z) \right\vert_{\partial \Omega_D} = g_D \\
+	\left. \frac{\partial u_N(r,z)}{\partial \vec{n}} \right\vert_{\partial \Omega_N} = g_N
 \end{align}
 at every point on the respective portion of the boundary $\partial\Omega$.
 
@@ -357,15 +357,15 @@ Solve the linear system (MG).
 Obtain the finite element solution.
 \fi
 
-Given an infinite set of basis functions $\{ \phi_k \}_{k=1}^\infty$ for $H^1_0(\Omega)$, we can represent any member of this space in terms of the basis.
+Given an infinite set of basis functions $\{ \phi_k \}_{k=1}^\infty$ that span $H^1_0(\Omega)$, we can represent any member of this space in terms of the basis.
 We can split the solution into two parts, the first satisfying the homogeneous boundary $u_h(r,z)$, and the second satisfying the Dirichlet boundary $u_p(r,z)$.
 \begin{align}
-	u_N(r,z) = u_p + u_h = u_p + \sum_{j=1}^\infty u_j \phi_j.
+	u_N(r,z) = u_p + u_h = u_p + \sum_{j=1}^\infty u_j \phi_j,
 \end{align}
 for some unknown coefficient values $u_j$.
-Ignoring $u_p$ for the minute, if we substitute this form of the solution into equation \eqref{eqn:weakform} and simplify, we obtain an equation for the residual $r$ in terms of the unknowns $u_j$,
+Ignoring $u_p$ for the minute, if we substitute this form of the solution into equation \eqref{eqn:weakform} and simplify, we obtain an equation for the residual $b$ in terms of the unknowns $u_j$,
 \begin{align}
-	r(u_1,u_2,\ldots) = \sum_{j=1}^\infty u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla v - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j v \right]. \label{eqn:galerkin}
+	b(u_1,u_2,\ldots) = \sum_{j=1}^\infty u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla v - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j v \right]. \label{eqn:galerkin}
 \end{align}
 
 Since the test function $v$ is a member of the space spanned by the basis functions, we can expand the test function in terms of this basis,
@@ -375,37 +375,36 @@ Since the test function $v$ is a member of the space spanned by the basis functi
 And because the weak form must be satisfied for all test functions $v$, it is the case that the weak form must be satisfied for all values of the coefficients $v_i$.
 Substituting this form of the test function into equation \eqref{eqn:galerkin}, the following must be satisfied for $i=1,2,\ldots$
 \begin{align}
-	r_i(u_1,u_2,\ldots)=\sum_{j=1}^\infty u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j \phi_i \right].
+	b_i(u_1,u_2,\ldots)=\sum_{j=1}^\infty u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j \phi_i \right].
 \end{align}
 
 
 For the purposes of implementation, a truncation must be performed on these infinite series.
 This leads to an approximation of the true solution.
-Suppose that we reduce our basis set to $M$ functions.
+If we reduce our basis set to a total of $M$ functions, then the approximation to the solution becomes
+\begin{align}
+	u_N(r,z) = u_p + \sum_{j=1}^M u_j \phi_j. \label{eqn:trunc}
+\end{align}
+
 Then we have a $M\times M$ system of equations 
 \begin{align}
-	\sum_{j=1}^M u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j \phi_i \right],
+	b_i = \sum_{j=1}^M u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j \phi_i \right],
 \end{align}
 for $i=1,2,\ldots,M$.
-
-
-
-The integrals can be evaluated using quadrature rules mentioned in section \ref{sec:integration}.
-The Jacobian matrix
-
-
-that can now be solved to determine the coefficients $u_j$ in the solution.
-
-
-
+The Jacobian matrix $A$ can be computed 
+\begin{align}
+	A_{ij} = \frac{\partial b_i}{\partial u_j} = \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j \phi_i \right]
+\end{align}
 
 Newton's method is the general purpose solver used in \oomph to find the finite element solution.
 To solve the general nonlinear problem arising from a finite element discretisation, an iterative method must be used to determine the solution.
 For our specific case the problem is linear, so Newton's method will converge in exactly one iteration to the exact solution in floating point arithmetic.
 
-Once the vector of residuals $b$, and the Jacobian matrix $A$, have been computed, all that remains is to calculate the final solution by solving the linear system.
+The integrals can be evaluated using quadrature rules mentioned in section \ref{sec:integration} to obtain the Jacobian matrix and the residual vector.
+Once the vector of residuals $b$, and the Jacobian matrix $A$, have been computed, all that remains is to calculate the final solution by solving the linear system
 \begin{align}
-	A x = b
+	A x = -b.
 \end{align}
-The default solver within \oomph for finding the solution to this linear system is the direct solver SuperLU <<CITATION>>.
-This is the point that we swap the default solver with our implementation of the preconditioned multigrid solver.
+This determine the coefficients $u_j$ in the expansion of the solution \eqref{eqn:trunc}.
+The default solver within \oomph for finding the solution to this linear system is the direct solver SuperLU.
+This is the point at which we swap the default solver with our implementation of the preconditioned multigrid solver.
