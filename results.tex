@@ -2,21 +2,52 @@
 
 \def\figwidth{0.7\columnwidth}
 
+\def \mgcol {red}
+\def \lucol {black}
 
-What results did we gather?
-What machine did we use?
-
-Need a general discussion for each
-
-Increasing $N$ causes issues for both multigrid and superlu.
-Multigrid behaves worse, but both still don't work.
-Can rectify this by shifting the computational domain away from the $z$-axis.
+\def \helmholtzfolder {data/output_k_100_n_5}
+\def \poissonfolder {data/output_k_0_n_5}
+\def \axisymmpoisson {data/output_k_0_n_0}
+\def \axisymhelmholtz {data/output_k_10_n_0}
 
 
-Solutions below were computed on a rectangular mesh of the problem domain, $\Omega = [1,2]\times [0,1]$.
-The elements used were linear, quadrilateral elements, consisting of four nodes each.
 
-The machine running the results
+The results of the numerical experiments carried out are detailed below.
+We wish to compare the outcomes to existing literature of Cartesian Helmholtz as well as cylindrical Poisson problems.
+The data collected were CPU timings of SuperLU and multigrid for the parameter pairs $(k^2,N)$ listed in table \ref{tab:params}.
+Data were also gathered on the number of iterations taken for FGMRES to converge for the multigrid preconditioner.
+
+Solutions were computed on a rectangular mesh of the problem domain, $\Omega = [1,2] \times [0,1]$.
+The elements used were linear, quadrilateral elements, consisting of four nodes on each element.
+The tolerance for FGMRES to accept the solution and break the iteration was set to be $1.0\times 10^{-10}$.
+
+% BIG ISSUE -- HOW DO WE FIX THIS? MAYBE JUST SORT IT
+% MAYBE MENTION LARGE N CAUSES ISSUES, HOW WE SOLVE IT, THEN WE JUST KEEP N SMALL FOR RESULTS
+% Increasing $N$ causes issues for both multigrid and superlu.
+% Multigrid behaves worse, but both still don't work.
+% Can rectify this by shifting the computational domain away from the $z$-axis.
+
+The machines used to run the numerical experiments had a total of 130GB of RAM.
+Unfortunately this means that when the number of degrees of freedom of the problem reached $1.3\times 10^7$, equivalent to seven refinement levels, the computer ran out of memory.
+Because of this, only six data points have beeen gathered for each individual problem, corresponding to the six levels of refinement that were able to run.
+This appears to be sufficient to begin to see the trend in the data, as can be seen below.
+The direct solver SuperLU is responsible for this drawback in the results, and multigrid performed adequately for even more levels of refinement.
+
+
+\bgroup
+\def\arraystretch{1.2}
+\begin{table}[h]
+    \centering
+    \begin{tabular}{C{2cm}|C{2cm}}
+        $k^2$ & $N$ \\\hline
+        100 & 5 \\
+        10 & 0 \\
+        0 & 5 \\
+        0 & 0
+    \end{tabular}
+    \caption{\label{tab:params} Parameter choices for timing study.}
+\end{table}
+\egroup
 
 
 
@@ -33,39 +64,11 @@ Blah blah the solution
 
 We can see from figure \ref{fig:sol_error} that increasing the resolution of the mesh decreases the error.
 Each additional level of initial refinement reduces the element width by a factor of two.
-The specific gradient of the line..
+The specific gradient of the line.. % NEED TO FIX THIS.
+As the error is decreasing upon refinement, we can assert that the computed solution approaches the exact solution.
 
 
-\begin{figure}
-    \centering
 
-    \begin{tikzpicture}
-        \centering
-    \begin{loglogaxis}[
-    xlabel={$h$},
-    ylabel={Error},
-    xmin=0.01, xmax=1.1,
-    grid=major,
-    width=\figwidth
-    ]
-    
-    % Plot the data
-    \addplot [only marks,fill=black] table {data/helmholtz_error.dat};
-
-    % Calculate gradient and draw the triangle
-    \addplot table[y={create col/linear regression={y=1}}] {data/helmholtz_error.dat} 
-    coordinate [pos=0.8] (A)
-    coordinate [pos=0.3] (B);
-    \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
-    \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
-    node [pos=0.25, anchor=south] {1} % label the horizontal line
-    node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
-    ;
-
-    \end{loglogaxis}
-    \end{tikzpicture}
-    \caption{\label{fig:sol_error} Behaviour of the error between the exact and computed solution by multigrid for the Helmholtz problem with $k^2=100,N=5$ for varying levels of initial refinement.}
-\end{figure}
 
 
 
@@ -74,35 +77,29 @@ The specific gradient of the line..
 
 \section{Timings}
 
+Multigrid is an optimal solver as the time complexity of the algorithm is linear in the number of degrees of freedom in the problem.
+Direct solvers perform far worse in comparison, with scaling that is often at least quadratic in the degrees of freedom.
+The particular direct solver we are comparing against is SuperLU, which is a sparse direct solver that takes advantage of the matrix structure.
+In general then, we expect multigrid to outperform SuperLU.
+
+Figures \ref{fig:time1} and \ref{fig:time2} compare the run times of multigrid and SuperLU for the $N=5$ and $N=0$ cases for the Poisson and Helmholtz equations.
+It is clear from these figures that multigrid eventually outperforms SuperLU, despite the lacking number of data points.
+However, there is a significant setup cost in using multigrid to solve these problems.
+This 
+
+For the $N=0$ problems in figure \ref{fig:time2}, the point at which multigrid begins to outperform SuperLU comes much sooner.
+This point is at approximately $8.0\times 10^4$ degrees of freedom for both Poisson and Helmholtz problems.
+
+The gradient of the line through the multigrid data points on the log-log axis is approximately equal to one for all of the problems.
+This is precisely in line with the theoretical result of the time-complexity.
+For the gradient of the line through the SuperLU data, the value is approximately two.
+
+When choosing which solver between the two to use, the primary consideration should be the size of the problem.
+For a sufficiently large number of degrees of freedom, multigrid is a far superior choice.
+SuperLU will require more memory and take more time to finish execution than multigrid for every problem tested here.
 
 
 
-\begin{figure}
-    
-    % Helmholtz equation 
-    % time vs #dofs
-
-    \centering
-    \begin{tikzpicture}
-    \centering
-    \begin{loglogaxis}[
-    xlabel={Degrees of freedom},
-    ylabel={Time taken to solve (s)},
-    grid=major,
-    width=\figwidth,
-	legend style={at={(0.02,0.98)}, anchor=north west}
-    ]
-    
-    \addplot [color=black, mark=x] table [x index=1, y index=0] {data/helmholtz_mg_time.dat};
-    \addlegendentry{Multigrid}
-
-    \addplot [color=red, mark=x] table [x index=1, y index=0] {data/helmholtz_superlu_time.dat};
-    \addlegendentry{SuperLU}
-
-    \end{loglogaxis}
-    \end{tikzpicture}
-    \caption{Time taken to solve the Helmholtz equation with $k^2=100$ and $N=5$.}
-\end{figure}
 
 
 
@@ -112,27 +109,228 @@ The specific gradient of the line..
 
 \section{Iterations}
 
+The number of FGMRES iterations to reach convergence tolerance should remain relatively constant upon refinement of the mesh.
+This was demonstrated by Elman, Ernst, and O'Leary in \cite{elman} for the Helmholtz problem in Cartesian coordinates.
+Table \ref{tab:iter} shows the iteration count for several different refinement levels.
+It can be seen here that our results match closely with the literature, where we obtain relatively similar iteration counts for the solving problem.
+
+In addition, we provide iteration counts for the Poisson problem in table \ref{tab:poissoniter}.
+We see that the behaviour is similar to the multigrid case.
+
+
+\bgroup
+\def\arraystretch{1.2}
+
+\begin{table}[ht!]
+    \centering
+    \csvstyle{myTableStyle}{
+        longtable=c | c c c c c, % Specify column formatting
+        table head={ % Table header is the first line
+            \multirow{2}{*}{$N_\mathrm{dofs}$} & \multicolumn{5}{c}{$k^2$} \\
+            & 0 & 10 & 20 & 50 & 100 \\ \hline
+        },
+        table foot={ % Table footer is the last line
+            \caption{\label{tab:iter1} Number of iterations taken for FGMRES to converge to tolerance for $N=5$.}
+        },
+        late after line=\\,
+        no head, % Does the data file have a header?
+        separator=comma
+    }
+    \csvreader[myTableStyle]{data/iteration_data.dat}
+        {1=\ci,2=\cii,3=\ciii,4=\civ,5=\cv,6=\cvi}
+        {\ci & \cii & \ciii & \civ & \cv & \cvi}
+\end{table}
+
+\begin{table}[ht!]
+    \centering
+    \csvstyle{myTableStyle}{
+        longtable=c | c c c c c, % Specify column formatting
+        table head={ % Table header is the first line
+            \multirow{2}{*}{$N_\mathrm{dofs}$} & \multicolumn{5}{c}{$k^2$} \\
+            & 0 & 10 & 20 & 50 & 100 \\ \hline
+        },
+        table foot={ % Table footer is the last line
+            \caption{\label{tab:iter1} Number of iterations taken for FGMRES to converge to tolerance for $N=0$.}
+        },
+        late after line=\\,
+        no head, % Does the data file have a header?
+        separator=comma
+    }
+    \csvreader[myTableStyle]{data/iteration_data.dat}
+        {1=\ci,2=\cii,3=\ciii,4=\civ,5=\cv,6=\cvi}
+        {\ci & \cii & \ciii & \civ & \cv & \cvi}
+\end{table}
+
+\egroup
+
+
+
+
+
+
+
+
+% ----------------------------
+% SOLUTION PLOTS
+% ----------------------------
+
 \begin{figure}
+
+    \centering
     
-    % Helmholtz equation 
-    % Iteration vs #dofs
+    % Plot of the solution
+    \subfloat[][Plot of the solution of the Helmholtz equation for $k^2=$ and $N=$.]{
+        \includegraphics[width=\figwidth]{images/placeholder}
+    }
 
-    \centering
-    \begin{tikzpicture}
-    \centering
-    \begin{axis}[
-    xlabel={Degrees of freedom},
-    ylabel={Number of iterations},
-    xmode=log,
-    grid=major,
-    width=\figwidth,
-	legend style={at={(0.02,0.98)}, anchor=north west}
-    ]
+    % Plot of the error
+    \subfloat[][Behaviour of the error between the exact and computed solution by multigrid for the Helmholtz problem with $k^2=100,N=5$ for varying levels of initial refinement.]{
+        \label{fig:sol_error}
+        
+        \begin{tikzpicture}
+        \begin{loglogaxis}[
+        xlabel={$h$},
+        ylabel={Error},
+        xmin=0.01, xmax=1.1,
+        grid=major,
+        width=\figwidth
+        ]
+        
+        % Plot the data
+        % \addplot [color=red, mark=x] table {\helmholtzfolder/error.dat};
 
-    \addplot [color=red, mark=x] table [x index=1, y index=0] {data/helmholtz_mg_iter.dat};
+        Calculate gradient, draw the triangle
+        \addplot[color=\mgcol, mark=x] table[y={create col/linear regression={y=1}}] {\helmholtzfolder/error.dat} 
+        coordinate [pos=0.8] (A)
+        coordinate [pos=0.3] (B);
+        \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
+        \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
+        node [pos=0.25, anchor=south] {1} % label the horizontal line
+        node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
+        ;
 
-    \end{axis}
-    \end{tikzpicture}
-    \caption{Number of FGMRES iterations against degrees of freedom, using multigrid as a preconditioner.}
+        \end{loglogaxis}
+        \end{tikzpicture}
+    }
+    \caption{}
 \end{figure}
 
+
+% ----------------------------
+% TIMING PLOTS
+% ----------------------------
+
+\begin{figure}
+    
+    % Full equations
+    % time vs #dofs
+
+    \centering
+    
+    \subfloat[][Helmholtz equation with $k^2=100$.]{
+        \begin{tikzpicture}
+        \centering
+        \begin{loglogaxis}[
+        xlabel={Degrees of freedom},
+        ylabel={Time taken to solve (s)},
+        grid=major,
+        width=\figwidth,
+        legend style={at={(0.02,0.98)}, anchor=north west}
+        ]
+        
+        % Plot mg
+        \addplot [color=\mgcol, mark=x] table [x index=1, y index=0] {\helmholtzfolder/mg_time.dat};
+        \addlegendentry{Multigrid}
+        
+        % Plot superlu
+        \addplot [color=\lucol, mark=x] table [x index=1, y index=0] {\helmholtzfolder/superlu_time.dat};
+        \addlegendentry{SuperLU}
+
+        \end{loglogaxis}
+        \end{tikzpicture}
+    }
+
+
+    \subfloat[][Poisson equation.]{
+        \centering
+        \begin{tikzpicture}
+        \centering
+        \begin{loglogaxis}[
+        xlabel={Degrees of freedom},
+        ylabel={Time taken to solve (s)},
+        grid=major,
+        width=\figwidth,
+        legend style={at={(0.02,0.98)}, anchor=north west}
+        ]
+        
+        % Plot mg
+        \addplot [color=\mgcol, mark=x] table [x index=1, y index=0] {\poissonfolder/mg_time.dat};
+        \addlegendentry{Multigrid}
+    
+        % Plot superlu
+        \addplot [color=\lucol, mark=x] table [x index=1, y index=0] {\poissonfolder/superlu_time.dat};
+        \addlegendentry{SuperLU}
+    
+        \end{loglogaxis}
+        \end{tikzpicture}
+    }
+    \caption{\label{fig:time1} Comparison of the time taken to solve the Helmholtz and Poisson equations using the multigrid and SuperLU solvers for $N=5$.}
+\end{figure}
+
+
+
+\begin{figure}[h]
+    
+    % Axisymmetric equations
+    % time vs #dofs
+
+    \centering
+    
+    \subfloat[][Helmholtz equation with $k^2=10$.]{
+        \centering
+        \begin{tikzpicture}
+        \begin{loglogaxis}[
+        xlabel={Degrees of freedom},
+        ylabel={Time taken to solve (s)},
+        grid=major,
+        width=\figwidth,
+        legend style={at={(0.02,0.98)}, anchor=north west}
+        ]
+        
+        % Plot mg
+        \addplot [color=\mgcol, mark=x] table [x index=1, y index=0] {\axisymhelmholtz/mg_time.dat};
+        \addlegendentry{Multigrid}
+    
+        % Plot superlu
+        \addplot [color=\lucol, mark=x] table [x index=1, y index=0] {\axisymhelmholtz/superlu_time.dat};
+        \addlegendentry{SuperLU}
+    
+        \end{loglogaxis}
+        \end{tikzpicture}
+    }
+
+    \subfloat[][Poisson equation ($k^2=0$).]{
+        \centering
+        \begin{tikzpicture}
+        \centering
+        \begin{loglogaxis}[
+        xlabel={Degrees of freedom},
+        ylabel={Time taken to solve (s)},
+        grid=major,
+        width=\figwidth,
+        legend style={at={(0.02,0.98)}, anchor=north west}
+        ]
+        
+
+        \addplot [color=\mgcol, mark=x] table [x index=1, y index=0] {\axisymmpoisson/mg_time.dat};
+        \addlegendentry{Multigrid}
+    
+        \addplot [color=\lucol, mark=x] table [x index=1, y index=0] {\axisymmpoisson/superlu_time.dat};
+        \addlegendentry{SuperLU}
+    
+        \end{loglogaxis}
+        \end{tikzpicture}
+    }
+
+    \caption{\label{fig:time2} Time taken to solve the axisymmetric versions of the Poisson and Helmholtz equations with $N=0$.}
+\end{figure}
