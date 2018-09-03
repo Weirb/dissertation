@@ -23,13 +23,14 @@ Helmholtz problem:
 	- Indefinite discretisation matrix
 \fi
 
-We wish to solve the Helmholtz equation in cylindrical coordinates in an unbounded three-dimensional domain, with symmetry about the $z$-axis.
-Exploiting the symmetry of the domain allows us to decompose the solution into its Fourier components.
-This has the advantage that the problem reduces to two dimensions.
+The end goal is to solve the Helmholtz equation in cylindrical coordinates in an unbounded three-dimensional domain, with symmetry about the $z$-axis.
+Simplifying slightly, we assume Dirichlet boundary conditions on all of the boundaries of the domain.
+This removes the unboundedness of the domain for the purposes of testing the solver on the problem.
+Exploiting the symmetry of the problem allows us to decompose the solution into its Fourier components and reduce the problem to two dimensions.
 
 In this chapter, we will derive the formal statement of the problem starting from the wave equation.
 Also included here is a discussion of the topics relevant to the practical solution of the problem.
-The outcome of this chapter should be the starting point for the finite element discretisation in chapter \ref{sec:fem}.
+The final outcome of this chapter should be the starting point for the finite element discretisation in chapter \ref{sec:fem}.
 
 
 
@@ -38,21 +39,24 @@ The outcome of this chapter should be the starting point for the finite element 
 
 \section{Problem derivation}
 
-Consider the three dimensional wave equation with wave speed $c$ in an unbounded domain,
+Consider the three dimensional wave equation with wave speed $c$,
 \begin{equation}
 	\frac{1}{c^2} \frac{\partial^2 u(x,y,z,t)}{\partial t^2} = \nabla^2 u(x,y,z,t). \label{eqn:wave}
 \end{equation}
-Assuming the existence of a separable solution where the time component of the solution is time-harmonic with frequency $\omega$,
+As in \cite{oomph_hh}, we assume the existence of a separable solution where the time component of the solution is time-harmonic with frequency $\omega$,
 we may write the real-valued solution as
 \[
 	u(x,y,z,t) = \Re \left( U(x,y,z)e^{-i\omega t} \right),
 \]
-where $U(x,y,z)$ is a complex-valued function \cite{oomph_hh}.
+where $U(x,y,z)$ is a complex-valued function.
 Substituting this into \eqref{eqn:wave}, we obtain the Helmholtz equation
 \begin{equation}
 	\nabla^2 U(x,y,z) + k^2 U(x,y,z) = 0, \label{eqn:hh}
 \end{equation}
-where $k=\omega/c$ is the wavenumber.
+where the wavenumber $k$ is defined as
+\begin{align}
+	k=\omega/c.
+\end{align}
 
 The mapping between Cartesian coordinates $(x,y,z)$ and cylindrical polar coordinates $(r,\varphi,z)$ is given by
 \begin{align}
@@ -64,7 +68,6 @@ The Jacobian of this mapping is given by
 \begin{align}
 	J = \left\vert \frac{\partial(x,y,z)}{\partial(r,\varphi,z)} \right\vert = r. \label{eqn:cylindrical_mapping}
 \end{align}
-
 This mapping transforms our equation from $U(x,y,z)$ into $U(r,\varphi,z)$, 
 which we may decompose into its Fourier components $u_N(r,z)$ around the $\varphi$ axis, so that
 \begin{equation}
@@ -113,7 +116,7 @@ This gives us the Fourier decomposed Helmholtz equation,
 
 The standard Helmholtz equation is classified by a single parameter, the wavenumber $k$.
 Decomposing the solution into Fourier components, we introduce the Fourier wavenumber $N$ as an additional parameter to the system.
-These two parameters together classify solutions for the problem.
+These two parameters together determine the equation and thus the solutions for the problem.
 
 
 
@@ -123,35 +126,32 @@ These two parameters together classify solutions for the problem.
 
 % ----------------------------------------
 
-\subsection{Complex-shifted Laplacian}
+\subsection{Multigrid for the Helmholtz equation}
 
-As mentioned above, there are some difficulities in solving the Helmholtz equation using multigrid.
-That is especially the case for even moderate values of $k^2$.
-Work has been done by several authors in order to overcome this shortcoming of multigrid <<CITATION>>.
-This is done by introducing a shift to the $k^2$ term in the Helmholtz operator into the complex plane.
+There are difficulities in solving the Helmholtz equation using multigrid as the solver.
+This is especially true for even moderate values of $k^2$.
+Large values of $k^2$ cause the discretisation matrix to be indefinite, causing the solver to not converge.
+Work has been done by several authors in order to overcome this shortcoming of multigrid \cite{cslp1, cslp2}.
 
-In Cartesian coordinates, the Laplacian operator with a complex shift is
+Multigrid performs poorly for the Helmholtz equation due to the indefiniteness of the operator.
+However, multigrid is a good solver for the nearby problem shifted into the complex plane.
+This is not the problem we want to solve, but a good enough approximation to use as a preconditioner for another iterative method.
+
+Introducing a shift to the complex plane, the Helmholtz operator in Cartesian coordinates becomes
 \begin{align}
 	\mathcal{L}_{CSLP} = \nabla^2 + (1 + i \alpha ) k^2,  \label{eqn:cslp}
 \end{align}
 where $\alpha$ is a positive real number controlling the offset from the real axis.
 
-In cylindrical coordinates, we obtain the same equation with the shift applied to the $k^2$ term.
-Therefore, in our Fourier decomposed cylindrical coordinates, we have
+Since our equation is defined in Fourier decomposed cylindrical coordinates, we obtain 
 \begin{align}
 	\nabla^2 u_N(r,z) + \left[ \left( 1 + i \alpha \right) k^2 - \frac{N^2}{r^2} \right] u_N(r,z) = 0.
 \end{align}
+Here, the shift is still applied to the $k^2$ term, but we have the additional term from \eqref{eqn:fhh}.
 
-
-The optimal value of $\alpha$ is determined in \cite{cslp2}
-
-
-
-
-% SOME MORE DISCUSSION ABOUT THE CSLP
-% WHAT VALUE OF ALPHA DO WE CHOOSE?
-% WHAT WERE THE RESULTS FROM THE PAPER GIVEN
-% HOW DOES IT BEHAVE IN CARTESIAN/CYLINDRICAL FROM LITERATURE
+The optimal value of $\alpha$ is determined in \cite{cslp2}.
+Specifically, they state that taking $\alpha=0.5$ results in the best possible.
+In all of our numerical experiments, we use this value for preconditioning FGMRES with multigrid.
 
 
 
@@ -164,59 +164,41 @@ The optimal value of $\alpha$ is determined in \cite{cslp2}
 
 \section{Related problems and other issues}
 
-In the case where $k=0$, the problem reduces to the Poisson problem.
+In the case where $k=0$, the problem reduces to the Poisson problem \eqref{eqn:poisson} with $f=0$, otherwise known as Laplace's equation.
 Taking $k=0$ in equation \eqref{eqn:fhh}, we obtain
 \begin{align}
 	\nabla^2 U(r,\varphi,z) = \nabla^2 u_N(r,z) - \frac{N^2}{r^2} u_N(r,z) = 0. \label{eqn:fp}
 \end{align}
-This is the Fourier decomposed Poisson equation in cylindrical coordinates.
+This is Poisson's equation in Fourier decomposed cylindrical coordinates.
 
 The Poisson equation is of interest because of the close relation between the Helmholtz and Poisson equations.
-Since we are interested in how multigrid performs when solving \eqref{eqn:fhh}, we will compare results with related problems.
+It is known that multigrid performs optimally for Poisson's equation.
+Since we are interested in how multigrid performs when solving \eqref{eqn:fhh}, we will compare results with this equation.
 
 Another related problem is the case when both $k=0$ and $N=0$.
-This is the Poisson equation in reduced coordinates, with a solution depending only on $r$ and $z$.
-To further aid in comparison between solutions, we will also consider this case.
+This is the Poisson equation in reduced axisymmetric coordinates, where the solution depends only on $r$ and $z$.
+To further aid in comparison between solutions, we will also consider how the equation behaves in this case.
 
 
 % Variable coefficients --------------
 
-A common issue with multigrid occurs with variable coefficient problems.
-\cite{briggs}
-% To demonstrate this, 
-% Consider the one dimensional equation
-% \begin{align}
-% 	\left( a(x)u'(x) \right)' = f(x)
-% \end{align}
-% This is generally an issue when $a(x)$ is highly variable.
-
+A common issue arising when using a multigrid solver occurs with variable coefficient problems \cite{briggs}.
 In Cartesian coordinates, the Helmholtz equation is a constant coefficient problem.
-The operator we have in this case is
+This is seen in the operator
 \begin{align}
 	\nabla^2 + k^2 = \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial t^2} + \frac{\partial^2}{\partial z^2} + k^2.
 \end{align}
-Taking $k=0$, we obtain the Laplace operator.
-This is especially well behaved for multigrid methods.
-Aside from the issues mentioned above, particularly with matrices becoming indefinite for larger values of $k^2$, this equation has constant coefficients.
-Therefore, combining the preconditioning discussed in section \ref{sec:precond}, multigrid should converge appropriately.
-Indeed, the multigrid implementation within \oomph for the Cartesian solver behaves as expected.
 
-In cylindrical coordinates, however, we have a term that varies proportional to the inverse of the radial distance squared.
-For the full Fourier decomposed Helmholtz equation, recall equation \eqref{eqn:fhh},
+In cylindrical coordinates, however, we have a term that varies proportionally to the inverse of the radial distance squared.
+For the Fourier decomposed Helmholtz equation, recall equation \eqref{eqn:fhh},
 \begin{align}
 	\frac{\partial^2 u_N}{\partial r^2}
 			 + \frac{1}{r} \frac{\partial u_N}{\partial r}
 			 + \frac{\partial^2 u_N}{\partial z^2}
 			 + (k^2 - \frac{N^2}{r^2})u_N = 0. \label{eqn:full_fhh}
 \end{align}
-
-Before any theoretical work to attempt to remedy issues arising from variable coefficients, we should first be certain that a problem exists with multigrid applied to the cylindrical problem.
-Since the implementation of multigrid within \oomph exists for the Cartesian case, we can begin here.
-With some slight modifications, the same code can be used to solve the problem in cylinderical coordinates.
-% Mention the changes made?
-Running the modified code to compute a solution resulted in a failure.
-The general error was lack of convergence in the FGMRES solver.
-To deduce the precide nature of the error, more analysis of the problem is necessary.
+As suggested in \cite{briggs}, this may cause issues with multigrid.
+A test of the method should be performed first to confirm before attempting to remedy potentially non-existent issues with variable coefficients.
 
 
 
@@ -231,38 +213,24 @@ To deduce the precide nature of the error, more analysis of the problem is neces
 \section{Domain and boundary conditions}
 
 The full wave equation \eqref{eqn:wave} is defined in three spatial dimensions and one temporal dimension.
-Given the assumptions above, in particular the time-harmonic solution and the axisymmetric domain, we reduce the problem to two spacial dimensions.
-Figure \ref{fig:full_domain} represents an example of the domain in full 3D cylindrical coordinates.
-On the other hand, figure \ref{fig:reduced_domain} shows the resulting domain after dimension reduction from the Fourier decomposition.
+The full cylindrical Helmholtz equtation \eqref{eqn:full_eqn} is defined in a cylinder in three spatial dimensions.
+If we let the cylindrical domain have a maximum radius of $R_{\mathrm{max}} > 0$, and let the domain contain a cylindrical cavity with some maximum radius $0<R_{\mathrm{min}}<R_\mathrm{max}$.
+Then resulting domain is shown in figure \ref{fig:full_domain}.
+
+In the reduced $(r,z)$ coordinates for the Fourier decomposed equation \eqref{eqn:fhh}, the domain becomes \ref{fig:reduced_domain}.
 This simplification aids in the computational work by reducing the number of degrees of freedom of the problem.
 It is only a matter of post-processing the solution to obtain the full 3D solution from the reduced computed solution, as nothing is lost due to symmetry.
+To obtain the full domain from this, a rotation of $2\pi$ radians about the $z$-axis is performed.
 
 To complete the problem formulation, boundary conditions must also be specified for the PDE.
-Since our equation is of elliptic type, any appropriate Dirichlet, Neumann, or Robin conditions will suffice.
-Each boundary condition has its own physical interpretation, and therefore influences the solution differently.
+The boundaries we need to specify on are the inner regions of the cylindrical walls.
+This translates to the four boundaries in the reduced equation.
+The Dirichlet boundary conditions are then
+\begin{align}
+	u_N(r,z) = u_0, \qquad \mathrm{on} \partial \Omega,
+\end{align}
+for some given value of $u_0$.
 
-As waves propagate through a medium, they may eventually arrive at a boundary, or continue travelling through space unimpeded.
-
-
-When a wave meets a boundary, depending on the boundary material properties, 
-
-
-
-
-
-% The sharp edges at the corners of the domain are generally not a problem.
-% Absorbing boundary conditions take care of that.
-
-
-
-
-
-In addition to the boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique since the domain of the problem is infinite.
-The Sommerfeld radiation condition
-\[
-\lim_{|x|\rightarrow \infty} |x|^{\frac{n-1}{2}} \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0, \label{eqn:sommerfeld}
-\]
-achieves this by ensuring that sources scatter to infinity and do not come from infinity \cite{sommerfeld}.
 
 
 \begin{figure}[ht!]
