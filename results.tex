@@ -19,7 +19,7 @@ Data were also gathered on the number of iterations taken for FGMRES to converge
 
 Solutions were computed on a rectangular mesh of the problem domain, $\Omega = [1,2] \times [0,1]$.
 The domain was meshed with a rectangular quadmesh, with ten elements in each direction on the coarsest level.
-The elements used were linear, quadrilateral elements, consisting of four nodes on each element.
+The elements used were quadratic, quadrilateral elements, consisting of four nodes on each element.
 The tolerance for FGMRES to accept the solution and break the iteration was set to be $1.0\times 10^{-10}$.
 
 The values of $N$ presented here are relatively small.
@@ -68,7 +68,7 @@ Blah blah the solution \ref{fig:solution}
 We can see from figure \ref{fig:sol_error} that increasing the resolution of the mesh decreases the error.
 Each additional level of initial refinement reduces the element width by a factor of two, and in turn reduces the error by a factor of eight.
 That is, the gradient of the line on the log-log plot is three.
-This is in agreement with the literature, as the order of the elements 
+This is in agreement with what we expect from quadratic elements, since the order of convergence is one more than the order of the element.
 As the error is decreasing upon refinement, we can assert that the computed solution approaches the exact solution.
 
 
