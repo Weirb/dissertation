@@ -18,14 +18,17 @@ The data collected were CPU timings of SuperLU and multigrid for the parameter p
 Data were also gathered on the number of iterations taken for FGMRES to converge for the multigrid preconditioner.
 
 Solutions were computed on a rectangular mesh of the problem domain, $\Omega = [1,2] \times [0,1]$.
+The domain was meshed with a rectangular quadmesh, with ten elements in each direction on the coarsest level.
 The elements used were linear, quadrilateral elements, consisting of four nodes on each element.
 The tolerance for FGMRES to accept the solution and break the iteration was set to be $1.0\times 10^{-10}$.
 
-% BIG ISSUE -- HOW DO WE FIX THIS? MAYBE JUST SORT IT
-% MAYBE MENTION LARGE N CAUSES ISSUES, HOW WE SOLVE IT, THEN WE JUST KEEP N SMALL FOR RESULTS
-% Increasing $N$ causes issues for both multigrid and superlu.
-% Multigrid behaves worse, but both still don't work.
-% Can rectify this by shifting the computational domain away from the $z$-axis.
+The values of $N$ presented here are relatively small.
+Specifically, we report numerical experiments using two different values of $N$: 0 and 5.
+Larger values of $N$ pose a significant problem to both the iterative and direct solvers.
+The Newton method does not converge in one iteration.
+This is the case for even modest values of $N$.
+A solution to this was found by shifting the minimum value of the domain on the $r$-axis to be equal to approximately $N$.
+Instead of using this fix, we keep the domain the same for all experiments, but focus only on the small values of $N$ known to work.
 
 The machines used to run the numerical experiments had a total of 130GB of RAM.
 Unfortunately this means that when the number of degrees of freedom of the problem reached $1.3\times 10^7$, equivalent to seven refinement levels, the computer ran out of memory.
@@ -60,11 +63,12 @@ The direct solver SuperLU is responsible for this drawback in the results, and m
 % Brief discussion of the two, don't need to go on
 
 
-Blah blah the solution
+Blah blah the solution \ref{fig:solution}
 
 We can see from figure \ref{fig:sol_error} that increasing the resolution of the mesh decreases the error.
-Each additional level of initial refinement reduces the element width by a factor of two.
-The specific gradient of the line.. % NEED TO FIX THIS.
+Each additional level of initial refinement reduces the element width by a factor of two, and in turn reduces the error by a factor of eight.
+That is, the gradient of the line on the log-log plot is three.
+This is in agreement with the literature, as the order of the elements 
 As the error is decreasing upon refinement, we can assert that the computed solution approaches the exact solution.
 
 
@@ -85,18 +89,20 @@ In general then, we expect multigrid to outperform SuperLU.
 Figures \ref{fig:time1} and \ref{fig:time2} compare the run times of multigrid and SuperLU for the $N=5$ and $N=0$ cases for the Poisson and Helmholtz equations.
 It is clear from these figures that multigrid eventually outperforms SuperLU, despite the lacking number of data points.
 However, there is a significant setup cost in using multigrid to solve these problems.
-This 
+This leads to the SuperLU solver being preferred for small problem sizes.
 
-For the $N=0$ problems in figure \ref{fig:time2}, the point at which multigrid begins to outperform SuperLU comes much sooner.
+When $k^2=100$ and $N=5$, the point at which multigrid outperforms SuperLU is approximately $5.0\times 10^5$.
+For the Poisson problem when $k^2=0$, the point at which multigrid outperforms SuperLU is much lower than the Helmholtz problem.
+This is also true in both cases where $N=0$ in figure \ref{fig:time2}, where the point at which multigrid begins to outperform SuperLU comes much sooner.
 This point is at approximately $8.0\times 10^4$ degrees of freedom for both Poisson and Helmholtz problems.
 
 The gradient of the line through the multigrid data points on the log-log axis is approximately equal to one for all of the problems.
-This is precisely in line with the theoretical result of the time-complexity.
-For the gradient of the line through the SuperLU data, the value is approximately two.
+This is precisely in line with the theoretical result of the time-complexity, namely that the execution time scales linearly with the number of degrees of freedom in the problem.
+For the gradient of the line through the SuperLU data, the value is approximately two, which is also what we expect from this solver.
 
 When choosing which solver between the two to use, the primary consideration should be the size of the problem.
 For a sufficiently large number of degrees of freedom, multigrid is a far superior choice.
-SuperLU will require more memory and take more time to finish execution than multigrid for every problem tested here.
+SuperLU will eventually require more memory and take more time to finish execution than multigrid for every problem tested here.
 
 
 
@@ -111,11 +117,11 @@ SuperLU will require more memory and take more time to finish execution than mul
 
 The number of FGMRES iterations to reach convergence tolerance should remain relatively constant upon refinement of the mesh.
 This was demonstrated by Elman, Ernst, and O'Leary in \cite{elman} for the Helmholtz problem in Cartesian coordinates.
-Table \ref{tab:iter} shows the iteration count for several different refinement levels.
-It can be seen here that our results match closely with the literature, where we obtain relatively similar iteration counts for the solving problem.
-
-In addition, we provide iteration counts for the Poisson problem in table \ref{tab:poissoniter}.
-We see that the behaviour is similar to the multigrid case.
+Tables \ref{tab:iter1} and \ref{tab:iter2} show the behaviour of the iteration count for several different refinement levels when $N=5$ and $N=0$, respectively.
+It can be seen here that our results match closely with the literature for small values of $k^2$., where we obtain relatively similar iteration counts for the solving problem with multigrid preconditioned FGMRES.
+However, when $k^2$ becomes large, the iteration counts are less constant and are much larger than reported in \cite{elman}.
+The behaviour tends towards a constant value as refinement increases, but is still larger than what might have been expected.
+This holds true for both values of $N$ that were tested.
 
 
 \bgroup
@@ -126,7 +132,7 @@ We see that the behaviour is similar to the multigrid case.
     \csvstyle{myTableStyle}{
         longtable=c | c c c c c, % Specify column formatting
         table head={ % Table header is the first line
-            \multirow{2}{*}{$N_\mathrm{dofs}$} & \multicolumn{5}{c}{$k^2$} \\
+            \multirow{2}{*}{$N_\mathrm{dofs}$} & \multicolumn{5}{c}{$k^2$} \\ \cline{2-6}
             & 0 & 10 & 20 & 50 & 100 \\ \hline
         },
         table foot={ % Table footer is the last line
@@ -136,29 +142,29 @@ We see that the behaviour is similar to the multigrid case.
         no head, % Does the data file have a header?
         separator=comma
     }
-    \csvreader[myTableStyle]{data/iteration_data.dat}
+    \csvreader[myTableStyle]{data/iteration_n_5}
         {1=\ci,2=\cii,3=\ciii,4=\civ,5=\cv,6=\cvi}
-        {\ci & \cii & \ciii & \civ & \cv & \cvi}
-\end{table}
+		{\cvi & \ci & \cii & \ciii & \civ & \cv}
+% \end{table}
 
-\begin{table}[ht!]
+% \begin{table}[ht!]
     \centering
     \csvstyle{myTableStyle}{
         longtable=c | c c c c c, % Specify column formatting
         table head={ % Table header is the first line
-            \multirow{2}{*}{$N_\mathrm{dofs}$} & \multicolumn{5}{c}{$k^2$} \\
+			\multirow{2}{*}{$N_\mathrm{dofs}$} & \multicolumn{5}{c}{$k^2$} \\ \cline{2-6}
             & 0 & 10 & 20 & 50 & 100 \\ \hline
         },
         table foot={ % Table footer is the last line
-            \caption{\label{tab:iter1} Number of iterations taken for FGMRES to converge to tolerance for $N=0$.}
+            \caption{\label{tab:iter2} Number of iterations taken for FGMRES to converge to tolerance for $N=0$.}
         },
         late after line=\\,
         no head, % Does the data file have a header?
         separator=comma
     }
-    \csvreader[myTableStyle]{data/iteration_data.dat}
+    \csvreader[myTableStyle]{data/iteration_n_0}
         {1=\ci,2=\cii,3=\ciii,4=\civ,5=\cv,6=\cvi}
-        {\ci & \cii & \ciii & \civ & \cv & \cvi}
+		{\cvi & \ci & \cii & \ciii & \civ & \cv}
 \end{table}
 
 \egroup
@@ -179,17 +185,18 @@ We see that the behaviour is similar to the multigrid case.
     \centering
     
     % Plot of the solution
-    \subfloat[][Plot of the solution of the Helmholtz equation for $k^2=$ and $N=$.]{
+    \subfloat[][Multigrid computed solution of the Helmholtz equation for $k^2=100$ and $N=5$.]{
+        \label{fig:solution}
         \includegraphics[width=\figwidth]{images/placeholder}
     }
 
     % Plot of the error
-    \subfloat[][Behaviour of the error between the exact and computed solution by multigrid for the Helmholtz problem with $k^2=100,N=5$ for varying levels of initial refinement.]{
+    \subfloat[][Error behaviour between the exact and computed solution by multigrid for the Helmholtz problem with $k^2=100$ and $N=5$. ]{
         \label{fig:sol_error}
         
         \begin{tikzpicture}
         \begin{loglogaxis}[
-        xlabel={$h$},
+        xlabel={Relative element width},
         ylabel={Error},
         xmin=0.01, xmax=1.1,
         grid=major,
@@ -212,7 +219,7 @@ We see that the behaviour is similar to the multigrid case.
         \end{loglogaxis}
         \end{tikzpicture}
     }
-    \caption{}
+    \caption{Plot of the computed solution using multigrid and the corresponding error between the exact and computed solutions for multiple levels of refinement.}
 \end{figure}
 
 
