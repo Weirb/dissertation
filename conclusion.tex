@@ -1,15 +1,15 @@
 \chapter{Conclusion}
 
 The work completed in this project has led to the successful development of a solver for the Helmholtz equation in Fourier decomposed cylindrical coordinates.
-We have built on the existing machinery for the Helmholtz equation in Cartesian coordinates and extended the 
+We have built on the existing machinery for the Helmholtz equation in Cartesian coordinates and created the necessary extensions required for finding the solution in this case.
 
-Results gathered in the previous chapter demonstrate that the cylindrical Helmholtz equation behaves like the Cartesian version of the equation.
-For example, the 
+Results gathered in the previous chapter demonstrate that the cylindrical and Cartesian Helmholtz equations behave similarly.
+When $k^2$ becomes larger, this is less so, however the method is still convergent for large values of the wavenumber.
 
-We discussed issues that could caused problems when finding the solution.
-Namely, the problem
-
-The shifted-Laplacian preconditioner works fine in the change of variables.
+A discussion of the issues that might have caused problems were detailed.
+For example, the problem with variable coefficients for the multigrid iteration and the indefiniteness of the Helmholtz discretisation.
+In the end, these issues were succesfully overcome or did not pose a problem at all.
+The shifted-Laplacian preconditioner works well in the change of variables, with results consistent with the existing literature.
 
 In summary, it has been shown that a multigrid based preconditioner for FGMRES is a viable method for solving the finite element discretisation of the Fourier decomposed Helmholtz equation in cylindrical coordinates.
 
@@ -21,13 +21,14 @@ In summary, it has been shown that a multigrid based preconditioner for FGMRES i
 
 \section{Further work}
 
-Implement other boundary conditions, including absorbing boundary conditions using PML.
-The current implementation of the work only handles Dirichlet boundaries.
-This simplification was appropriate for initial work, but applications likely will involve non-essential boundaries.
+This work has only considered and implementated Dirichlet boundaries.
+A first step to extend the results would be to introduce other boundary conditions, including absorbing boundary conditions.
+The simplifications were appropriate for initial work, but applications likely will involve non-essential boundaries.
+For this work to be of any use in the future, this should be handled first.
 
-Increasing the Fourier wavenumber $N$ causes issues.
+Increasing the Fourier wavenumber $N$ causes issues for both the multigrid and SuperLU solvers.
 This is likely because the variable coefficient term $N^2/r^2$ becomes more dominant.
 To remedy the issue, we shift the mesh to increase the minimum value of $r$ so that it is approximately equal to $N$.
 With an accompanying scaling of the equation, this solves the problem.
-Implementing a more robust method for handling large $N$ and an accompanying convergence study should also be performed.
+Implementing a more robust method for handling large $N$ and an accompanying convergence study should be performed.
 
