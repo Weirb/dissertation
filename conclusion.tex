@@ -27,8 +27,8 @@ The simplifications were appropriate for initial work, but applications likely w
 For this work to be of any use in the future, this should be handled first.
 
 Increasing the Fourier wavenumber $N$ causes issues for both the multigrid and SuperLU solvers.
-This is likely because the variable coefficient term $N^2/r^2$ becomes more dominant.
-To remedy the issue, we shift the mesh to increase the minimum value of $r$ so that it is approximately equal to $N$.
-With an accompanying scaling of the equation, this solves the problem.
+This is likely caused because the equation is incorrectly scaled.
+Appropriately scaling the equation should resolve the problem.
+Alternatively, we can shift the mesh to increase the minimum value of $r$ so that it is approximately equal to $N$.
 Implementing a more robust method for handling large $N$ and an accompanying convergence study should be performed.
 
