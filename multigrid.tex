@@ -344,22 +344,3 @@ On its own, the linear solver is not as effective as the preconditioned linear s
 
 We reduce the tolerance of the mg solver and 
 
-
-
-
-
-\subsection{FGMRES}
-
-Multigrid preconditioning leads to a variable preconditioner.
-That is, between iterations, the preconditioning matrix changes.
-
-Because of this, the standard GMRES method is not a suitable choice of smoother.
-Instead, the flexible version of the GMRES algorithm, appropriately named FGMRES, may be used instead.
-
-Only capable of preconditioning on the right
-
-
-This method was proposed by Saad in \cite{fgmres}.
-For a more detailed description of the FGMRES algorithm, readers are directed to this paper.
-
-
