@@ -1,104 +1,105 @@
 \chapter{Introduction}
 
+% Applications and who cares
+The fundamental nature of waves means that waves appear in many different contexts in science, engineering, and industry.
+For example, in electromagnetics, Maxwell's equations describe the physical properties of waves generated from electric and magnetic fields.
+In acoustics, the propagation of sound waves may be modelled by the same equations.
+Modelling of seismic waves can aid in the search for materials or objects underground and help to better understand earthquakes.
+Understanding and modelling the scattering of waves is of great importance and practical use.
+The equation describing the behaviour of waves in all of these applications is the wave equation, given by
+\begin{align}
+	\nabla^2 u = \frac{1}{c^2}\frac{\partial^2 u}{\partial t^2}, \label{eqn:first}
+\end{align}
+with wave speed $c$.
+This is a time-dependent, second order, hyperbolic partial differential equation.
+% the wave equation has widespread application and appears in
+% The specific physics equation
+The governing equation and the problem of interest in this project is the Helmholtz equation.
+\begin{align}
+	\nabla^2 u + k^2 u = 0.
+\end{align}
+The Helmholtz equation is a second order, elliptic type partial differential equation that arises when seeking separable solutions of the wave equation.
+The physical interpretation of the solution $u$ depends on the particular application, but in general represents the amplitude of the wave with wavenumber $k$.
+For our application, $u$ represents the acoustic pressure at a point in the domain.
 
-\iffalse Brief outline of the chapter below
+Determining properties of an object located in a fluid is a problem applicable to many industries and fields.
+For example, (Thales, defence apps)
 
-Background:
-	What is HH equation?
-	What does it model?
-	How is it derived?
-	Boundary conditions
-	- 	Sommerfield radiation condition
-	
-Finite element method:
-	Discretisation of HH
-	Discretisation of infinite domains
-		D,N,radiation
-	ABC, DtN, PML
+% MAYBE CHANGE THIS, NON INFINITE CYLINDER
+Consider a cylindrical object located within an infinite fluid.
+We can represent the whole domain using cylindrical coordinates $(r, \phi, z)$, where $0\leq r < \infty$, $0 \leq \phi < 2\pi$, and $-\infty < z < \infty$.
+If the centre of the object is located at the origin with some , then the domain contains a cylindrical hole at the origin.
+Assuming symmetry of the domain about the vertical axis
+By decomposing the solution into Fourier components in the azimuthal direction, we reduce the full cylindrical domain into 
 
-Linear solvers:
-	Iterative and direct
-	Krylov methods
-	Preconditioners
-	How does this relate to Poisson and HH?
-	- 	Small wavenumbers good convergence
 
-Project direction:
-	Where are we going? What to do...?
-	Multigrid in non-cartesian coordinates
-	Fourier decompostion of HH
-	Explore implementation of PMLs
-\fi
+% Boundary conditions
+We must also specify boundary conditions for the surface of the object, as well as any other boundaries in the domain.
+For an elliptic problem, all boundary edges must be specified with either Dirichlet, Neumann, or Robin conditions.
+A Dirichlet condition, where the known value of the solution is given on the boundary, $u|_{\partial\Omega}=u_0$.
+This type of boundary is known as soft, and can be interpreted as the boundary of an elastic wall that is displaced in response to a force on the outside.
+A value of zero on the boundary is known as a pressure release boundary.
+If the value here is nonzero, the boundary experiences some force from the other side.
+For a Neumann boundary, the normal derivative $\vec{n}\cdot \nabla u |_{\partial \Omega} = \partial u / \partial \vec{n} |_{\partial \Omega}$ is given on the boundary.
+The physical interpretation of this is a hard boundary, that does not move in response to a force.
+Lastly a Robin condition, giving both the value of the solution and the normal derivative on the boundary can be interpreted as a combination of the two above.
+
+
+
+% Sommerfeld + truncation
+In addition to boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique since the domain of the problem is infinite.
+The Sommerfeld radiation condition in three dimensions is given by
+\begin{align}
+	\lim_{|x|\rightarrow \infty} |x| \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0. \label{eqn:sommerfeld}
+\end{align}
+This achieves this requirement by ensuring that sources scatter to infinity and do not come from infinity \cite{sommerfeld}.
+
+Because the problem is defined on an infinite domain, we must perform a truncation of the domain to find the solution numerically.
+Choosing some appropriately sized region of interest surrounding the object, we restrict the domain to this region.
+However, this causes problems with waves interacting with the boundary of the truncated domain.
+Spurious waves from reflections on the outer walls propagate through the domain and the resulting solution is no longer correct.
+It is possible to deal with these reflections by introducing an artifical absorbing layer to the boundary of the domain.
+Several such layers exist, for instane absorbing boundary conditions (ABCs); Dirichlet-to-Neumann condtions (DtNs); and perfectly matched layers (PMLs).
+These all attempt to dampen waves in the artificial layer surrounding the domain so that there are no reflections back into the domain.
+
 
 
 % ----------------------------------------------
 
-% \section{Preliminaries}
+% How do we solve the problem
+\iffalse
+	Discretise
+	Direct vs Iterative solver (Krylov subspace)
+	Multigrid
+	Preconditioners
+	CSLP
+	MG as a preconditioner
+\fi
 
-The equation of interest in this project is the Helmholtz partial differential equation.
-More specifically, we will focus on the Helmholtz equation in circular cylindrical coordinates and decomposed into Fourier modes in the azimuthal direction,
-\begin{equation}
-	\nabla^2 u(r,z) + \left(k^2-\frac{N^2}{r^2}\right) u(r,z).
-\end{equation}
-This equation appears when seeking separable solutions by separating the time and space variables in the wave equation.
-As such, it can be thought of as the steady-state of time-indepedent solution of the wave equation.
-We will examine this equation mathematically, and discuss the difficulties in finding a solution numerically.
-
-Along with the 
-Because the problem is defined on an infinite domain, we must truncate the domain to find the solution numerically.
-This causes a problem with the waves interacting with the boundary of the domain, which produces spurious reflections and the resulting solution to become meaningless.
-It is possible to deal with these reflections by introducing an artifical absorbing layer to the boundary of the domain.
-Several such layers exist, including absorbing boundary conditions (ABCs); Dirichlet-to-Neumann condtions (DtNs); and perfectly matched layers (PMLs).
-
+% FEM Discretisation
 In order to solve the problem, we will use the C++ library \oomph to find the solution using the finite element method.
 This process will involve the discretisation of the equations on each element of the domain with the resulting system being assembled.
 The result of the finite element discretisation is an $n\times n$ linear system of equations,
 \[
-	A u = f,
+	A x = b,
 \]
 which requires a solver in order to compute the solution.
 In \oomph, the default linear solver is SuperLU, however this is also a direct solver.
 This has the benefit that the computed solution to the above equation is exact, modulo any floating point errors.
 But the computational cost is prohibitively expensive as the size of the problem increases.
 
+% Direct vs Iterative methods
 For small $A$, it is possible to use direct methods to solve these exactly (in exact arithmetic).
 As is often the case in practice, the matrices from the finite element discretisation are too large to compute by direct methods.
 Instead, many iterative methods have been developed to approximate the solution instead.
-A particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space composed of successive powers of the matrix $A$ \cite{leveque}.
+A particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space  of successive powers of the matrix $A$ \cite{leveque}.
 The Krylov space of dimension $k$ is 
 \[
 	\mathcal{K}_k(A, r_0) = \mathrm{span}(r_0, Ar_0, A^2 r_0, \ldots, A^{k-1} r_0).
 \]
-For example, the conjugate gradient method forms an orthogonal basis consisting of search directions.
-Unfortunately, a restriction on the convergence of the CG algorithm is that the matrix $A$ must be symmetric and positive definite.
-This is often not the case for a general problem.
+Such methods include the conjugate gradient and GMRES methods.
 
-% REWORD THIS PARAGRAPH
-Understanding that Krylov methods act on certain parts of the spectrum of the residual to dampen a range of frequencies is the key idea in multigrid methods.
-Transferring the residual of an equation on to a mesh with a different resolution can shift the frequency of the error in the residual.
-This allows the Krylov method, in this context known as a \textit{smoother}, to dampen the whole spectrum of the error, resulting in rapid convergnce.
-
-The performance of multigrid methods is excellent for the related Poisson problem,
-\begin{equation}
-	\nabla^2 u = f.
-\end{equation}
-Indeed, it is an optimal solver with time-complexity of $O(n)$ for a problem of size $n\times n$.
-For sufficiently small values of $k$, the Helmholtz equation is well approximated by Poisson's equation.
-In addition, the matrix arising from the finite element discretisation is well-conditioned.
-As $k$ becomes larger, however, the matrix becomes indefinite and more and more ill-conditioned.
-This causes multigrid to fail to converge to a solution.
-To handle the ill-conditioned system, a preconditioner can be used so that the problem may be more easily solved by numerical methods.
-
-The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \oomph.
-We would like to explore the performance of the solver for the Fourier decomposed version of the Helmholtz equation in axisymmetric cylindrical coordinates.
-Following this, we will also examine the performance of the solver using PMLs to handle reflections on the discretised boundary.
-
-
-% General talk about preconditioning
-We want to solve the linear system
-\begin{align}
-	A x = b.
-\end{align}
+% Preconditioning
 This equation is generated from the finite element discretisation of the problem.
 Linear systems of equations are everywhere, so there are a choice of several different methods to use to solve.
 Direct methods are too costly to use since in general, the dimension of the problem is large.
@@ -121,7 +122,7 @@ In this case, we have
 \end{align}
 This can be solved in two steps, 
 \begin{align}
-	P x = y, \qquad \qquad A P^{-1} y = b.
+	P x = y, \\A P^{-1} y = b.
 \end{align}
 
 
@@ -133,103 +134,13 @@ As a first attempt, it is a good idea to use a simple method to see the impact o
 Only in the case where optimisation is crucial to the problem or a general preconditioner does not work, a specific preconditioner should be developed.
 
 
-
-
-
-
-
-
-
-% \section{Historical background}
-% \iffalse
-% Motivation.
-% Who cares? Why is it difficult?
-% What are the benefits?
-% Need some citations? Names in the field...
-% \fi
-
-Because of the fundamental nature of waves, the wave equation has widespread application and appears in several contexts in science, engineering, and industry.
-For example, in electromagnetics, Maxwell's equations describe the physical properties of waves generated from electric and magnetic fields.
-In acoustics, the propagation of sound waves may be modelled by the same equations.
-Also, modelling of seismic waves can help to better understand earthquakes and aid in the search for materials or objects underground.
-Understanding and modelling scattering of waves is of great importance and practical use.
-
-<<CITATION>>
-Work in the field of waves began as early as with d'Alembert and Euler in the middle of the 18$^\text{th}$ century.
-The work of d'Alembert was motivated by the study of music.
-Instruments with strings, such as guitars and violins, vibrate when plucked.
-These vibrations can be modelled by 
-
-
-% The motivation behind these ideas was the development of optics and the propagation of light.
-% This in turn led to the invention of telescopes and microscopes and paved the road for further scientific discovery.
-
-The work in this project will primarily focus on the related partial differential equation, the Helmholtz equation.
-The wave and Helmholtz equations are closely linked, and study of one can lead to insight in the other.
-When seeking separable solutions of the wave equation, the Helmholtz equation appears as a time-independent form of the wave equation.
-The solutions of the time-independent equation represent steady state solutions.
-
-
-
-
-
-% General talk about absorbing boundary conditions for infinite domains.
-
-Perfectly matched layers (PML) are a method for handling infinite domains computationally, by damping or absorbing the wave-like solution in a layer outside of the region of interest.
-Without such a tool, the truncated domain acts like a hard boundary, causing reflections of the solution back onto the domain.
-These reflections are not physical, and so any solution found with these artifacts are useless for a physical model of waves.
-The use of a PML will instead absorb the 
-
-
-
-
-
-
-
-
-
-% ----------------------------------------------
-
-\section{Literature Review}
-
-\iffalse
-
-Topics to cover:
-	Solving Poisson problem
-	Solving Helmholtz
-	Complex shifted laplacian
-	Multigrid
-	Cylindrical coordinates
-
-Mention one or two references for each, try and reach >2 pages.
-
-\fi
-
-% INTRO
-Let us discuss the current state of the literature in relation to our problems.
-We will focus our attention on multigrid methods and the finite element method applied to solving the Helmholtz equation.
-The literature presented will aim to give an overview in generality, and we will refine our scope appropriately in the following chapters.
-
-
-% FEM
-The finite element method is a widely used method for solving
-
-Introductory courses on solving ordinary or partial differential equations often showcase numerical methods involving finite difference discretisations.
-These are relatively straightforward to implement and the machinery for the implementation is simple.
-On the other hand, finite element methods take a more sophisticated approach to their method of solutions.
-
-
+% Multigrid
+% Need more at the beignning
 % MULTIGRID http://www.mgnet.org/mgnet/books/Wesseling/bookr-orig.pdf
 Wesseling describes the historical development of multigrid methods from their inception in 1967 up to 1985 \cite{wesseling}.
 It is stated that the first mention of multigrid was by the Russian mathematician Fedorenko.
 In his paper, Fedorenko developed a method for solving elliptic type partial differential equations, which he called the ``the method of alternating direction'' \cite{fedorenko}.
 Later, Hackbusch independently developed multigrid methods and presented the rigorous mathematical framework for multigrid.
-
-% --- Should we include this?
-Other work on multigrid consists of algebraic multigrid (AMG) methods.
-These consist of decoupling the geometry of the problem from any operators involved in the iteration.
-This allows for more complex problems wherein there may not be a sense of a geometry for the problem.
-The method seeks to smooth errors in some algebraic sense, rather than geometrically \cite{briggs}.
 
 Since multigrid was developed in order to find solutions to elliptic problems, the majority of work has been focused in that area.
 As the prototypical example of an elliptic PDE is Poisson's equation, we can be certain that the mathematical framework for solving this is set.
@@ -237,8 +148,32 @@ The difficulty lies with the Helmholtz equation, which can be thought of a pertu
 As both the Poisson and Helmholtz equations are both of elliptic type, we should expect behaviour to be similar.
 However, this is not the case.
 
+The performance of multigrid methods is excellent for the related Poisson problem,
+\begin{equation}
+	\nabla^2 u = f. \label{eqn:poisson}
+\end{equation}
+Indeed, it is an optimal solver with time-complexity of $O(n)$ for a problem of size $n\times n$.
+For sufficiently small values of $k$, the Helmholtz equation is well approximated by Poisson's equation.
+In addition, the matrix arising from the finite element discretisation is well-conditioned.
+As $k$ becomes larger, however, the matrix becomes indefinite and more and more ill-conditioned.
+This causes multigrid to fail to converge to a solution.
+To handle the ill-conditioned system, a preconditioner can be used so that the problem may be more easily solved by numerical methods.
 
-% CSLP PRECONDITIONING
+The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \oomph.
+We would like to explore the performance of the solver for the Fourier decomposed version of the Helmholtz equation in axisymmetric cylindrical coordinates.
+Following this, we will also examine the performance of the solver using PMLs to handle reflections on the discretised boundary.
+
+
+% Multigrid as a preconditioner
+Multigrid methods may also be used as a preconditioner for other iterative methods.
+With a reduced
+
+Since at each iteration of the outer iterative method the preconditioner will change, the iterative method must be `flexible'.
+Saad created the Flexible GMRES iterative method, FGMRES \cite{fgmres}.
+This is the solver used to solve the linear system 
+
+
+% CSLP
 Work on overcoming the issue for larger values of $k^2$ has been successful.
 The current preferred method for solving the problem is to precondition a Krylov subspace method using a complex-shifted laplacian preconditioner (CSLP).
 Convergence results obtained by authors Erlangga, Oosterlee, and Vuik show that among the class of preconditioners discussed, the CSLP is the most effective in preconditioning the Helmholtz problem for large wavenumber \cite{cslp1}.
@@ -248,10 +183,7 @@ In a second paper by the same authors, they go on to discuss the CSLP in more de
 % DISCUSSION OF THE SECOND PAPER
 
 
-% ABSORBING BC
-% NEED REFERENCES ON ABC, DTN, PML(BERMUDEZ)
 
-The truncation of a computational domain
 
 
 
@@ -262,23 +194,20 @@ The truncation of a computational domain
 
 \section{Project outline}
 
-\iffalse
-What is each chapter doing? What do we hope to accomplish? 
-This entire chapter will need fleshing out/rewording depending on the scope of each chapter.
-\fi
+Chapter one contains the introduction to the project.
+This has hopefully given you, the reader, the modern and historical context of the problem of interest, as well as the aims and objectives to motivate the rest of this dissertation.
 
-Chapter one, as you may have just finished reading, contains the introduction to the project.
-This has hopefully given you, the reader, the modern and historical context of the problem of interest.
-
-The focus of chapter two is to develop the mathematical context of the problem.
+The focus of chapter two is to derive the mathematics of the problem.
 Here we will give the necessary mathematical overview and description of the problem and the derivation of equations.
+Also here will be issues associated with the practicalities of finding a solution.
 
-Chapter three aims to cover the finite element method in sufficient detail 
-Also covered are relevant references to the FEM implementation within \oomph.
-That is to say, how is the mathematical description of FEM transferred to an object-oriented code able to solve PDEs numerically.
+Chapter three aims to cover the necessary high level facets of the finite element method for the the problem in question.
+Also covered are relevant references to the FEM implementation within \oomph and how the mathematical description of the FEM is transferred to an object-oriented code able to solve PDEs numerically.
 
-Chapter four will cover the mathematics of multigrid.
-In particular, we discuss the application of multigrid in finding the finite element solution to our Helmholtz equation.
+Chapter four will motivate multigrid and outline the mathematics of the multigrid algorithm for solving the Helmholtz equation.
+In particular, we discuss the application of multigrid in finding the solution to the finite element discretisation of the Helmholtz equation.
 
-Finally, the project will end with a discussion of the results and concluding remarks in chapters six and seven, respectively.
-A summary of findings and an overview of the work completed in the project will be given.
+The project will come together at the end with a discussion of the results.
+Here, a summary of findings and an overview of the work completed in the project will be given, as well as comparison to related problems and the current literature.
+
+Finally, we will complete the dissertation with concluding remarks and outline steps for moving forward from the end of the project.
