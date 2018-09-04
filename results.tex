@@ -119,7 +119,7 @@ The number of FGMRES iterations to reach convergence tolerance should remain rel
 This was demonstrated by Elman, Ernst, and O'Leary in \cite{elman} for the Helmholtz problem in Cartesian coordinates.
 Tables \ref{tab:iter1} and \ref{tab:iter2} show the behaviour of the iteration count for several different refinement levels when $N=5$ and $N=0$, respectively.
 It can be seen here that our results match closely with the literature for small values of $k^2$., where we obtain relatively similar iteration counts for the solving problem with multigrid preconditioned FGMRES.
-However, when $k^2$ becomes large, the iteration counts are less constant and are much larger than reported in \cite{elman}.
+However, when $k^2$ becomes large, the iteration counts are less constant and are much larger than reported in \cite{elman}, but the iteration decreases upon refinement.
 The behaviour tends towards a constant value as refinement increases, but is still larger than what might have been expected.
 This holds true for both values of $N$ that were tested.
 
