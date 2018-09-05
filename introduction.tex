@@ -1,6 +1,7 @@
 \chapter{Introduction}
 
 % Applications and who cares
+
 The fundamental nature of waves means that waves appear in many different contexts in science, engineering, and industry.
 For example, in electromagnetics, Maxwell's equations describe the physical properties of waves generated from electric and magnetic fields.
 In acoustics, the propagation of sound waves may be modelled by the same equations.
@@ -10,27 +11,26 @@ The equation describing the behaviour of waves in all of these applications is t
 \begin{align}
 	\nabla^2 u = \frac{1}{c^2}\frac{\partial^2 u}{\partial t^2}, \label{eqn:first}
 \end{align}
-with wave speed $c$.
+where the speed of the wave is denoted by the constant $c$.
 This is a time-dependent, second order, hyperbolic partial differential equation.
-% the wave equation has widespread application and appears in
-% The specific physics equation
-The governing equation and the problem of interest in this project is the Helmholtz equation.
+
+The governing equation and the problem of interest in this project is the Helmholtz equation,
 \begin{align}
-	\nabla^2 u + k^2 u = 0.
+	\nabla^2 u + k^2 u = 0,
 \end{align}
-The Helmholtz equation is a second order, elliptic type partial differential equation that arises when seeking separable solutions of the wave equation.
-The physical interpretation of the solution $u$ depends on the particular application, but in general represents the amplitude of the wave with wavenumber $k$.
+where the parameter $k$ is the wavenumber and defined by $k=\omega/c$, where $\omega$ is the frequency of the wave.
+The Helmholtz equation is a second order, elliptic partial differential equation that arises when seeking separable solutions of the wave equation.
+Notably, this equation is now independent of time.
+The physical interpretation of the solution $u$ depends on the particular application, but in general represents the amplitude of a wave with wavenumber $k$.
 For our application, $u$ represents the acoustic pressure at a point in the domain.
 
 Determining properties of an object located in a fluid is a problem applicable to many industries and fields.
-For example, (Thales, defence apps)
-
-% MAYBE CHANGE THIS, NON INFINITE CYLINDER
-Consider a cylindrical object located within an infinite fluid.
+Focusing on a single example, locating objects in large bodies of water such as sea mines or submarines require models for scattering of sonar waves.
+To this end, consider a cylindrical object located within an infinite fluid.
 We can represent the whole domain using cylindrical coordinates $(r, \phi, z)$, where $0\leq r < \infty$, $0 \leq \phi < 2\pi$, and $-\infty < z < \infty$.
-If the centre of the object is located at the origin with some , then the domain contains a cylindrical hole at the origin.
-Assuming symmetry of the domain about the vertical axis
-By decomposing the solution into Fourier components in the azimuthal direction, we reduce the full cylindrical domain into 
+If the object is located at the origin and aligned with the $z$-axis, then we can model the object in the domain with a vertically aligned cylindrical hole at the origin.
+Assuming symmetry of the domain in the azimuthal direction, we can reduce the dimension of the problem to $(r,z)$ coordinates.
+Decomposing the solution into Fourier components in the azimuthal direction, we transform the cylindrical Helmholtz equation into the Fourier decomposed Helmholtz equation.
 
 
 % Boundary conditions
@@ -65,56 +65,44 @@ These all attempt to dampen waves in the artificial layer surrounding the domain
 
 
 % ----------------------------------------------
-
 % How do we solve the problem
-\iffalse
-	Discretise
-	Direct vs Iterative solver (Krylov subspace)
-	Multigrid
-	Preconditioners
-	CSLP
-	MG as a preconditioner
-\fi
+
 
 % FEM Discretisation
-In order to solve the problem, we will use the C++ library \oomph to find the solution using the finite element method.
-This process will involve the discretisation of the equations on each element of the domain with the resulting system being assembled.
-The result of the finite element discretisation is an $n\times n$ linear system of equations,
-\[
-	A x = b,
-\]
-which requires a solver in order to compute the solution.
-In \oomph, the default linear solver is SuperLU, however this is also a direct solver.
-This has the benefit that the computed solution to the above equation is exact, modulo any floating point errors.
-But the computational cost is prohibitively expensive as the size of the problem increases.
-
+In order to solve the problem, we will use the C++ library \oomph \cite{oomph} to find the solution using the finite element method.
+This process involves creating a mesh of elements, then the discretisation of the equations on each element of the mesh.
+The contribution of each element to the total problem is then combined and the result is a $n\times n$ linear system of equations,
+\begin{align}
+	A x = b.
+\end{align}
 % Direct vs Iterative methods
-For small $A$, it is possible to use direct methods to solve these exactly (in exact arithmetic).
-As is often the case in practice, the matrices from the finite element discretisation are too large to compute by direct methods.
-Instead, many iterative methods have been developed to approximate the solution instead.
-A particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space  of successive powers of the matrix $A$ \cite{leveque}.
-The Krylov space of dimension $k$ is 
-\[
-	\mathcal{K}_k(A, r_0) = \mathrm{span}(r_0, Ar_0, A^2 r_0, \ldots, A^{k-1} r_0).
-\]
-Such methods include the conjugate gradient and GMRES methods.
+This system of equations requires a solver in order to compute the solution.
+For small $A$, it is possible to use direct methods to find $x$.
+In \oomph, the default linear solver is the direct solver SuperLU.
+The benefit of a direct solver is that the computed solution to the above equation is exact, modulo any floating point errors.
+However, the computational cost is prohibitively expensive as the size of the problem increases, and even for modestly sized problems this solver fails.
+The alternative approach is to use iterative methods to find an approximation to the solution.
+A wide range of iterative methods have been developed to take advantage of the underlying structure of the matrix $A$.
+One particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space of successive powers of the matrix $A$ \cite{leveque}.
+The Krylov space of dimension $p$ is 
+\begin{align}
+	\mathcal{K}_p(A, r_0) = \mathrm{span}(r_0, Ar_0, A^2 r_0, \ldots, A^{p-1} r_0).
+\end{align}
+Iterates from Krylov methods are linear combinations of the basis elements of the Krylov subspace.
+This class of algorithms includes the conjugate gradient and GMRES methods, among several others.
+
 
 % Preconditioning
-This equation is generated from the finite element discretisation of the problem.
-Linear systems of equations are everywhere, so there are a choice of several different methods to use to solve.
-Direct methods are too costly to use since in general, the dimension of the problem is large.
-Iterative methods, such as Krylov subspace methods, are a good alternative to use.
-However the performance of such methods is poor without a preconditioner.
-Hence, we would like a preconditioner that improves the performance of the iterative method.
+Unfortunately, iterative methods suffer from a lack of robustness.
+As such the effectiveness of such methods can be poor in general.
+This issue has been addressed by using an approximation $P$ to $A$ that is relatively cheap to both find and invert.
+By multiplying the original system by this approximation, we can readily improve the performance of iterative methods.
+This approach is known as preconditioning, and the approximation $P$ is known as the preconditioner.
 
 Applying a preconditioning matrix $P$ on the left, we have
 \begin{align}
-	P^{-1} A x = P^{-1} b, \label{eqn:precond_left}
+	P^{-1} A x = P^{-1} b. \label{eqn:precond_left}
 \end{align}
-which solves the above system exactly for the case $P=A^{-1}$. 
-This is optimal as it solves the original problem, however it is costly to obtain.
-Instead, we would like a alternative such that $P$ is cheap to find and the preconditioned system \eqref{eqn:precond_left} is easier to solve than the original problem.
-
 Alternatively, a preconditioning matrix can be applied on the right.
 In this case, we have
 \begin{align}
@@ -122,69 +110,55 @@ In this case, we have
 \end{align}
 This can be solved in two steps, 
 \begin{align}
-	P x = y, \\A P^{-1} y = b.
+	&(1) \, P x = y, \\ &(2) A P^{-1} y = b.
 \end{align}
 
-
-Many general preconditioning techniques have been developed that work for a wide variety of problems.
+If we take $P=A$ as the preconditioner, we can solve the above system exactly for the case since $P^{-1}A=I$. 
+This is optimal as it solves the original problem, however it is costly to obtain.
+On the other hand, taking $P=I$ is cheap to obtain, but does not reduce the difficulty of solving the problem.
+Instead, we would like a alternative such that $P$ is cheap to find and the preconditioned system is easier to solve than the original problem.
+Many general preconditioning techniques have been developed that work for a variety of problems.
 For example, preconditioning matrices based on the splitting of the matrix $A$ are simple to use and cheap to compute.
-More specific preconditioning techniques have been developed in the case of certain problems.
-These tend to be more complicated to use, but often will come with better performance.
+More specific preconditioning techniques have been developed in the case of specific problems.
+These tend to be more complicated to derive and implement, but often will achieve better performance in the iterative method.
 As a first attempt, it is a good idea to use a simple method to see the impact on the convergence times.
-Only in the case where optimisation is crucial to the problem or a general preconditioner does not work, a specific preconditioner should be developed.
+In the case where optimisation is crucial to the problem or a general preconditioner does not work, a specific preconditioner should be developed.
 
 
 % Multigrid
-% Need more at the beignning
-% MULTIGRID http://www.mgnet.org/mgnet/books/Wesseling/bookr-orig.pdf
+An optimal class of iterative methods for solving problems arising from the discretisation of elliptic PDEs are the multigrid algorithms.
 Wesseling describes the historical development of multigrid methods from their inception in 1967 up to 1985 \cite{wesseling}.
 It is stated that the first mention of multigrid was by the Russian mathematician Fedorenko.
 In his paper, Fedorenko developed a method for solving elliptic type partial differential equations, which he called the ``the method of alternating direction'' \cite{fedorenko}.
-Later, Hackbusch independently developed multigrid methods and presented the rigorous mathematical framework for multigrid.
+Later, Hackbusch independently developed multigrid methods and presented the rigorous mathematical framework for multigrid \cite{hackbusch}.
 
-Since multigrid was developed in order to find solutions to elliptic problems, the majority of work has been focused in that area.
-As the prototypical example of an elliptic PDE is Poisson's equation, we can be certain that the mathematical framework for solving this is set.
-The difficulty lies with the Helmholtz equation, which can be thought of a perturbation by $k^2$ of the Laplace operator in the Poisson equation.
-As both the Poisson and Helmholtz equations are both of elliptic type, we should expect behaviour to be similar.
-However, this is not the case.
-
-The performance of multigrid methods is excellent for the related Poisson problem,
+The performance of multigrid methods is excellent for the archetypal elliptic PDE, the Poisson problem,
 \begin{equation}
 	\nabla^2 u = f. \label{eqn:poisson}
 \end{equation}
-Indeed, it is an optimal solver with time-complexity of $O(n)$ for a problem of size $n\times n$.
-For sufficiently small values of $k$, the Helmholtz equation is well approximated by Poisson's equation.
-In addition, the matrix arising from the finite element discretisation is well-conditioned.
-As $k$ becomes larger, however, the matrix becomes indefinite and more and more ill-conditioned.
-This causes multigrid to fail to converge to a solution.
-To handle the ill-conditioned system, a preconditioner can be used so that the problem may be more easily solved by numerical methods.
-
-The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \oomph.
-We would like to explore the performance of the solver for the Fourier decomposed version of the Helmholtz equation in axisymmetric cylindrical coordinates.
-Following this, we will also examine the performance of the solver using PMLs to handle reflections on the discretised boundary.
+Indeed, it is an optimal solver with time-complexity $O(n)$, scaling linearly in the number of degrees of freedom of the problem.
+The Helmholtz equation is exactly the Poisson equation when $k^2=0$ and $f=0$.
+The matrix in the finite element discretisation of the Helmholtz equation becomes indefinite and ill-conditioned as $k^2$ becomes large.
+This causes issues with linear solvers, in particular it causes multigrid to fail to converge to a solution.
+To handle the ill-conditioned system, we use a preconditioner so that the problem may be solved by multigrid.
 
 
-% Multigrid as a preconditioner
-Multigrid methods may also be used as a preconditioner for other iterative methods.
-With a reduced
-
-Since at each iteration of the outer iterative method the preconditioner will change, the iterative method must be `flexible'.
+% Multigrid as a preconditioner, CSLP
+Work on overcoming the issues in using multigrid to solve the Helmholtz equation for large values of $k^2$ has been successful.
+The method of solving the problem is to precondition a Krylov subspace method using a shift into the complex plane.
+Using a transformation of the Helmholtz equation to
+\begin{align}
+	\nabla^2 u + (1+i\alpha)k^2 u = 0,
+\end{align}
+where $\alpha$ controls the complex shift.
+This is known as the complex-shifted Laplacian preconditioner (CSLP).
+Multigrid performs well in solving this problem, as shown in the convergence results obtained by Erlangga, Oosterlee, and Vuik \cite{cslp1}.
+Among the class of preconditioners discussed, the CSLP is the most effective in preconditioning the Helmholtz problem for large wavenumbers.
+In another paper by the same authors, they used a multigrid to compute the preconditioner to solve the system using an outer iteration of FGMRES \cite{cslp2}.
+This was done since at each iteration of the outer iterative method the preconditioner will change, so the method must be `flexible'.
 Saad created the Flexible GMRES iterative method, FGMRES \cite{fgmres}.
-This is the solver used to solve the linear system 
-
-
-% CSLP
-Work on overcoming the issue for larger values of $k^2$ has been successful.
-The current preferred method for solving the problem is to precondition a Krylov subspace method using a complex-shifted laplacian preconditioner (CSLP).
-Convergence results obtained by authors Erlangga, Oosterlee, and Vuik show that among the class of preconditioners discussed, the CSLP is the most effective in preconditioning the Helmholtz problem for large wavenumber \cite{cslp1}.
-They showed... % DISCUSSION OF THE FIRST PAPER
-
-In a second paper by the same authors, they go on to discuss the CSLP in more detail, and in particular, applied to multigrid methods \cite{cslp2}.
-% DISCUSSION OF THE SECOND PAPER
-
-
-
-
+The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \oomph.
+We would like to explore the performance of this method for the Fourier decomposed version of the Helmholtz equation in axisymmetric cylindrical coordinates.
 
 
 
