@@ -47,7 +47,7 @@ at every point on the respective portion of the boundary $\partial\Omega$.
 The weak solution of a problem is a relaxation of the conditions for the existence of a solution to the problem.
 A weak solution $u_N^{\mathrm{weak}}(r,z)$ satisfies the essential (Dirichlet) boundary condition and that
 \begin{align}
-	\int_\Omega \left( \nabla^2 u_N + \left[ (1+i\alpha)k^2-\frac{N^2}{r^2}\right]u_N \right) v = 0
+	\int_\Omega \left( \nabla^2 u_N + \left[ (1+i\alpha)k^2-\frac{N^2}{r^2}\right]u_N \right) v = 0,
 \end{align}
 for all test functions $v$ that are 0 on the essential boundary.
 
@@ -62,19 +62,6 @@ The solution $u_N^{\mathrm{weak}}(r,z)$ must satisfy the Dirichlet boundary cond
 The function spaces $H^i(\Omega)$ are known as Sobolev spaces and are complete normed vector spaces.
 
 
-% For the strong form above, we require at least that $u_N(r,z) \in C^2(\Omega)$.
-% A sufficiently smooth solution satisfying the weak form will also satisfies the stong form.
-% Therefore the two statements of the problem are equivalent, given the smoothness requirements of the classical formulation.
-
-
-The solution on the mesh is represented using shape functions that form a basis for the domain.
-
-For a two-dimensional domain, the shape functions are bilinear and 
-In particular, for the global node $j$ in the mesh, the basis function $\phi_j(r,z)$ is 1 at node $j$ and 0 everywhere else.
-
-
-Local vs global coordinates
-
 
 
 
@@ -85,27 +72,17 @@ Local vs global coordinates
 The main components of the finite element method are the nodes, the elements, and the mesh.
 A mesh is a collection of elements; an element is a collection of nodes.
 
-Each node contains data about its location within the mesh, its local coordinate within the element, as well as the value of the solution at the node.
+Each element contains data about its location within the mesh, its local coordinate within the element, as well as the value of the solution on the nodes in the element.
+A mapping exists from global coordinates of the domain to the local coordinates of an element.
+The Jacobian of this mapping is used when 
 
-The elements are the 
+The number of nodes in an element determines the order of the approximation of the solution on the element.
+Recall that we can find an interpolating polynomial that passes through $p+1$ distinct points with a polynomial of degree $p$.
+So for example, if there are two nodes in a one-dimensional slice of an element, a linear polynomial can interpolate the solution between them.
 
-The number of nodes of an element determines its order.
-If For example, an element with
-
-How do we get from global to local coordinates?
-We need the mapping
-And with that we need the Jacobian of the mapping
-(we have two change of coordinates: Cartesian -> Cylindrical -> Local
-And so we have two Jacobian mappings)
-
-On the elements we have defined basis functions.
-These represent the function 
-
-Together with the elements, other fundamental pieces of the FEM are the nodes and the mesh.
-Every element consists of multiple nodal points, each of which holds data required for solving the problem.
-For example, nodes contain the global coordinate of their position within the mesh
-
-
+The solution on the elements is represented using a basis for $H^1(\Omega)$.
+The local basis functions are defined such that there is exactly one function that takes the value one for each node on an element and 0 on all of the others.
+In Galerkin's method, the test functions are taken to be the basis functions. 
 
 The FEM lends itself well to object-oriented programming (OOP) design principles.
 This is due to the discrete entities involved and the relationships between them.
@@ -273,12 +250,6 @@ Figure \ref{fig:adaptive} shows an example of a mesh consisting of four elements
 On the right mesh, the element in the top right corner has been refined, while the others remain the same.
 This has introduced two hanging nodes to the element, displayed here in red.
 
-Alternatively, there is also p-refinement.
-This method of refinement increases the order of the element by increasing the number of nodes.
-Recall that we can find an interpolating polynomial that passes through $n+1$ distinct points with a polynomial of degree $n$.
-So for example, if there are two nodes in a one-dimensional slice of an element, a linear polynomial can interpolate the solution between them.
-If the solution is highly nonlinear, increasing the order of the interpolating polynomial will decrease the interpolation error.
-Hence, increasing the number of nodes can lead to a reduction in the solution error.
 \begin{figure}[h]
 	% Uniform and adaptive refinement
 
