@@ -6,7 +6,8 @@
 
 Multigrid refers to a family of methods which use multiple grid levels in order to achieve high rates of convergence to solve linear systems.
 The algorithm time-complexity is linear in the number of equations, making multigrid an optimal solver for many problems.
-Multigrid is applied to find the solution to elliptic PDEs, such as the Poisson problem, or our problem of focus, the Helmholtz equation.
+Multigrid can be applied iteratively as a solver or as a preconditioner to find the solution to a linear system.
+For our problem, we will solve the Helmholtz equation by using multigrid as a preconditioner for the FGMRES iterative method.
 
 Let us motivate multigrid by considering the downfalls of the Jacobi method.
 Iteration converges rapidly for error components whose frequency components are high.
@@ -17,6 +18,19 @@ Now the solution is transferred back to the fine grid by interpolation and apply
 
 High frequency components of the error are damped rapidly by a smoother.
 Low frequency components on a coarse mesh are high frequency, thus are damped rapidly by a smoother.
+
+
+\begin{figure}
+	% Insert figure of error components for initial iteration phases, want to show low frequency errors are not dampened.
+	% Insert figure for how the frequencies decay based on mesh level.
+	% Probably use a 1D Helmholtz problem to do this
+	\centering
+	\subfloat[][Initial error in the solution.]{\includegraphics[draft]{images/placeholder}}
+	\\
+	\subfloat[][Error in the solution after TODO damped Jacobi iterations.]{\includegraphics[draft]{images/placeholder}}
+	\caption{Plots of the error between the exact and computed solutions to $u''(x)=0$ with boundary conditions $u(0)=u(1)=0$.
+			 Notice here that high frequency errors are damped fast, while low frequencies persist after several iterations.}
+\end{figure}
 
 The description above is the outline for the two-grid method, on which many other multgrid methods are based \cite{hackbusch}.
 For instance, the MG V-cycle may be thought of as a recursive scheme by performing an additional two-grid iteration on each coarser grid.
@@ -145,16 +159,6 @@ Instead, the purpose is to reduce the high frequency errors of the solution on t
 As mentioned earlier, this is the key idea to multigrid algorithms.
 Smoothing is typically done by a SOR method, such as the weighted Jacobi or Gauss-Seidel methods.
 
-\begin{figure}
-	% Insert figure of error components for initial iteration phases, want to show low frequency errors are not dampened.
-	% Insert figure for how the frequencies decay based on mesh level.
-	% Probably use a 1D Helmholtz problem to do this
-	\centering
-	\includegraphics[draft]{images/placeholder}
-	\caption{High frequency errors are damped fast}
-\end{figure}
-
-
 There are two opportunities to perform smoothing operations.
 These occur before the restriction to the coarser level (pre-smoothing), then again after the coarse grid correction is applied to the solution on the finer level (post-smoothing).
 Different multigrid cycles apply different rules to smoothing, such as when to smooth and how many smoothing iterations to perform.
@@ -162,57 +166,35 @@ For example, in the case of a V or W-cycle, both pre-smoothing and post-smoothin
 However, in the case of an S-cycle, no pre-smoothing operations are performed, and only post-smoothing is applied.
 For certain problems, this can improve performance because of the reduction of the smoothing operations \cite{iyengar}.
 
-
-\cite{elman}
 The particular choice of smoother in \oomph is between the complex damped Jacobi method and GMRES.
 Alternatively, one could choose to implement their own smoother to override the default behaviour.
-Generally speaking, 
-
-In this paper, the results and analysis are obtained from using the GMRES solver.
 
 
 
 
 \subsection{Prolongation and restriction}
 
-The procedures for transferring solution data between mesh levels are known as prolongation and restriction.
-These operators are built 
+The procedures for transferring the solution between mesh levels are known as prolongation and restriction.
+Prolongation, otherwise known as interpolation, is the process of transferring the solution up a level from a coarse grid to a finer grid.
+Restriction, sometimes called coarsening, is the operation that acts as the inverse to prolongation.
+This process moves the solution down a grid level from a fine grid to a coarser grid.
+These operators are created using interpolation methods between elements on the different meshes.
 
-Prolongation, otherwise known as interpolation, is the process of transferring data up a level from a coarse grid to a finer grid.
-This is done in general by sampling known values to interpolate the unknowns.
-
-Let $\Omega^h$ and $\Omega^{2h}$ be the meshes on the fine and coarse levels, respectively, and let $V^{h}$ and $V^{2h}$ be the finite element spaces on their respective meshes.
-Since $\Omega^{h}$ is obtained through refinement of $\Omega^{2h}$, we have that $V^{2h}\subset V^h$.
-Then we can define the canonical prolongation operator \cite{volker},
+Let $\Omega^h$ and $\Omega^{2h}$ be the meshes on the fine and coarse levels, respectively, of the domain $\Omega$.
+Denote by $V^{h}$ and $V^{2h}$ the finite element spaces on their respective meshes.
+The mesh $\Omega^{h}$ is obtained through refinement of $\Omega^{2h}$, or equivalently, $\Omega^{2h}$ is obtained through unrefinement of $\Omega^{h}$.
+Since $\Omega^{2h}\subset \Omega^{h}$, it is the case that $V^{2h}\subset V^h$.
+Then we define the prolongation operator by
 \begin{align}
 	I^h_{2h} \, : \, V^{2h} \rightarrow V^h.
 \end{align}
-
-As an alternative view of the transfer operator above, we can consider the operator acting on nodal values instead of acting on the members of the finite element space.
-Using this approach, if the coarse mesh with a grid resolution $2h$ has $n$ total nodes, and the fine mesh with a grid resolution of $h$ has $m$ total nodes, then
-\begin{align}
-	I^h_{2h} \, : \, R^m \rightarrow R^n.
-\end{align}
-
-
-
-Restriction, sometimes known as coarsening or injection, is the `inverse' operation to prolongation.
-That is, in the sense that restriction operations perform the opposite action to prolongation.
-This process transfers data down a grid level from a fine grid to a coarser grid.
-
-Using the notation as above, we can define the canonical restriction operators \cite{volker},
+Likewise, we define restriction operator,
 \begin{align}
 	I^{2h}_h \, : \, V^{h} \rightarrow V^{2h}.
 \end{align}
 
-
-
-On any given mesh level, applying first a restriction then a prolongation, or a prolongation then a restriction, will result in the mesh level remaining constant.
-However, it is not necessarily true that the solution data will remain the same.
-Since the prolongation operator interpolates data values, certainly there will be some discrepancy in the final result.
-
+The two operators act on element basis functions, which take nodal values from their source mesh level to the destination mesh level.
 Figure \ref{fig:pro_res_ops} is a representation of how the transfer matrices act on points in the mesh.
-
 
 \begin{figure}[h]
 	\centering
@@ -256,49 +238,14 @@ Figure \ref{fig:pro_res_ops} is a representation of how the transfer matrices ac
 	\caption{\label{fig:pro_res_ops} Prolongation and restriction operators moving between mesh levels.}
 \end{figure}
 
-
-
+The transfer operators are all created in the setup phase for multigrid, and can be created once the meshes have been generated.
 Two transfer operators are required for each mesh level, except for on the finest and coarsest levels.
-Instead, a restriction for the coarsest level and a prolongation the matrix is not needed.
-All of these are created in the setup phase of the algorithm.
-The algorithm used in the \oomph implementation of operator creation process is described below.
-
-To move from a coarse mesh to a fine mesh:
-1. Create the fine mesh
-2. For each element in the fine mesh
-3. For each node in the element
-4. Get the local coordinates of the node
-5. Interpolate the value of the solution using the coarse mesh solution value and basis functions
-6. End loops
-
-Once the prolongation matrix has been created, the restriction matrix is then defined to be the transpose of the prolongation matrix.
-Figure \ref{fig:create_prolong_matrix} shows how solution data for a uniform refinement of a single element is performed.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[draft]{images/placeholder}
-	\caption{Prolongation matrix creation process. \label{fig:create_prolong_matrix}}
-\end{figure}
-
-
-
-
-\subsection{Grid hierarchy}
-
-We will restrict our discussion to uniform structured grids in order to focus on the details of multigrid.
-Mathematically, we require only the grid hierarchy so the specific internals of the individual grids is a technical detail that we will omit. 
-
-% We want to discuss how the grid hierarchy is computed and used within oomph-lib.
-The grid hierarchy used by multigrid in \oomph is generated by... 
-
-
-
-\begin{figure}[h]
-	% Show initial refinement, want to show how the hierarchy is created within oomph-lib
-	\centering
-	\includegraphics[draft]{images/placeholder}
-	\caption{Example of a grid hierarchy created for multigrid in \oomph.}
-\end{figure}
+In these cases, a restriction for the coarsest level and a prolongation for the finest level are not needed.
+For each possible level of refinement, we create a prolongation matrix.
+Consider a given level of refinement and call the mesh at this level the coarse mesh and the one at the next level the fine mesh.
+Loop over all of the elements in the fine mesh, and then for each node in the element, compute the contribution to the matrix that the node takes from its posisiton in the coarse mesh.
+The total contribution is put into the transfer matrix, taking the solution from the coarse mesh to the fine mesh.
+The restriction matrix can then be defined to be the transpose of the prolongation matrix.
 
 
 
@@ -319,9 +266,9 @@ As mentioned in chapter \ref{sec:problem}, the Helmholtz equation we are interes
 Since \oomph does not natively handle complex arithmetic, complex numbers are instead stored as 2D vectors.
 The first component of the vector is the real part of the complex number, and the second component is the imaginary part.
 
-For a specific enumeration of the unknowns, we obtain a matrix whose structure allows us to solve the problem more efficiently.
-In our case, we first compute the contribution for all of the real unknowns, then the contribution for the imaginary unknowns.
-This gives rise to a Jacobian matrix with block structure
+For a specific enumeration of the unknowns, we can obtain a matrix whose structure allows us to solve the problem more efficiently.
+Taking into account the order of the \oomph complex number-vector representation, we first compute the contribution for all of the real unknowns, then the contribution for the imaginary unknowns.
+This ordering gives rise to a Jacobian matrix with a block structure
 \begin{align}
 	A = \begin{pmatrix}
 		A_r & -A_c \\ A_c & A_r
@@ -329,18 +276,32 @@ This gives rise to a Jacobian matrix with block structure
 \end{align}
 Here, $A_r$ is the real part of the discretisation and $A_c$ is the imaginary part.
 
-Given this matrix with a block structure, we will want to use a block preconditioner as our preconditioning matrix.
-
-
+Given a matrix with a block structure, we use a preconditioner that acts on the blocks of the matrix.
+This is aptly named a block preconditioner.
+A framework for block preconditioning exists within \oomph, so then all that is required is to extend this interface using the specifics of our preconditioner.
+The linear solver can then use the block preconditioner to solve the linear system.
 
 
 \subsection{Multigrid preconditioning}
 
-As an alternative to using multigrid as an iterative solver, it is possible to instead perform multigrid iterations to partially solve the linear system, then perform a solve with an additional linear solver on the preconditioned system.
-This gives an effective method  
+Since multigrid does not perform well for the Helmholtz equation for moderate values of $k^2$, another approach is required.
+In order to take advantage of the benefits of multigrid, we instead solve a nearby complex-shifted problem.
+Recall the CSLP \eqref{eqn:cslp},
+\begin{align}
+	\nabla^2 u + \left[(1+i\alpha)k^2 - \frac{N^2}{r^2}\right] u = 0.
+\end{align}
+This is not the problem we want to solve, but instead is close enough that we can use the solution to this as the preconditioner for another iterative method.
+Furthermore, the issues with multigrid for the standard Helmholtz equation are overcome with the shifted problem.
+Taking $\alpha=0$ as the shift, we recover back the Helmholtz equation.
+Therefore, by altering this parameter we can control exactly which problem is solved.
 
-On its own, the linear solver is not as effective as the preconditioned linear solver.
+To solve the problem then, we use the Krylov subspace method GMRES to solve the Helmholtz equation with multigrid as the preconditioner.
+There is an issue however that the preconditioner is not constant between iterations.
+This is due to using GMRES as the smoother for multigrid, and is noted in \cite{elman}.
+Because of this we instead use FGMRES, the flexible version of the GMRES method for the outer iteration.
+This method allows for a nonconstant preconditioner.
 
-
-We reduce the tolerance of the mg solver and 
-
+To summarise, the FGMRES algorithm is used to solve the Fourier decomposed Helmholtz equation by taking $\alpha=0$.
+This is the outer iteration, used to solve $Ax=b$.
+Multigrid is used as the preconditioner for FGMRES, solving the shifted Laplacian problem, using GMRES as the smoother.
+The value of the shift parameter for the preconditioner is taken to be $\alpha=0.5$.
