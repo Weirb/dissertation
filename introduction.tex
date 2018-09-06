@@ -143,7 +143,7 @@ The performance of multigrid methods is excellent for the archetypal elliptic PD
 \begin{equation}
 	\nabla^2 u = f. \label{eqn:poisson}
 \end{equation}
-Indeed, it is an optimal solver with time-complexity $O(n)$, scaling linearly in the number of degrees of freedom of the problem.
+Indeed, it is an optimal solver with time complexity $O(n)$, scaling linearly in the number of degrees of freedom of the problem.
 The Helmholtz equation is exactly the Poisson equation when $k^2=0$ and $f=0$.
 The matrix in the finite element discretisation of the Helmholtz equation becomes indefinite and ill-conditioned as $k^2$ becomes large.
 This causes issues with linear solvers, in particular it causes multigrid to fail to converge to a solution.
