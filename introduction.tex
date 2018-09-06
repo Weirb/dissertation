@@ -2,23 +2,26 @@
 
 % Applications and who cares
 
-The fundamental nature of waves means that waves appear in many different contexts in science, engineering, and industry.
+The fundamental nature of waves is the reason for their appearance in many different contexts in science, engineering, and industry.
 For example, in electromagnetism, Maxwell's equations describe the physical properties of waves generated from electric and magnetic fields.
-In acoustics, the propagation of sound waves may be modelled by the same equations.
+In acoustics, the propagation of sound waves may be modelled by similar equations.
 Modelling of seismic waves can aid in the search for materials or objects underground and help to better understand earthquakes.
 Understanding and modelling the scattering of waves is of great importance and practical use.
-The equation describing the behaviour of waves in all of these applications is the wave equation, given by
+The equation underlying the behaviour of waves in all of these applications is the wave equation, given by
 \begin{align}
 	\nabla^2 u = \frac{1}{c^2}\frac{\partial^2 u}{\partial t^2}, \label{eqn:first}
 \end{align}
-where the speed of the wave is denoted by the constant $c$.
+where $c$ is the speed of the wave and the Laplacian is the sum of second partial derivatives,
+\begin{align}
+	\nabla^2 = \sum_{i=1}^3 \frac{\partial^2}{\partial x_i^2}.
+\end{align}
 This is a time-dependent, second order, hyperbolic partial differential equation.
 
 The governing equation and the problem of interest in this project is the Helmholtz equation,
 \begin{align}
 	\nabla^2 u + k^2 u = 0,
 \end{align}
-where the parameter $k$ is the wavenumber and defined by $k=\omega/c$, where $\omega$ is the frequency of the wave.
+where the parameter $k$ is the wavenumber and defined by $k=\omega/c$, where $\omega$ is the angular frequency of the wave.
 The Helmholtz equation is a second order, elliptic partial differential equation that arises when seeking separable solutions of the wave equation.
 Notably, this equation is now independent of time.
 The physical interpretation of the solution $u$ depends on the particular application, but in general represents the amplitude of a wave with wavenumber $k$.
@@ -29,30 +32,34 @@ Focusing on a single example, locating objects in large bodies of water such as 
 To this end, consider a cylindrical object located within an infinite fluid.
 We can represent the whole domain using cylindrical coordinates $(r, \phi, z)$, where $0\leq r < \infty$, $0 \leq \phi < 2\pi$, and $-\infty < z < \infty$.
 If the object is located at the origin and aligned with the $z$-axis, then we can model the object in the domain with a vertically aligned cylindrical hole at the origin.
-Assuming symmetry of the domain in the azimuthal direction, we can reduce the dimension of the problem to $(r,z)$ coordinates.
-Decomposing the solution into Fourier components in the azimuthal direction, we transform the cylindrical Helmholtz equation into the Fourier decomposed Helmholtz equation.
+Assuming symmetry of the domain in the azimuthal direction, we can reduce the dimension of the problem.
+Decomposing the solution into Fourier components in the azimuthal direction, we transform the Helmholtz equation in cylindrical coordinates into the Fourier decomposed Helmholtz equation.,
+\begin{align}
+	\nabla^2 u + k^2 u - \frac{N^2}{r^2}u = 0.
+\end{align}
 
 
 % Boundary conditions
 We must also specify boundary conditions for the surface of the object, as well as any other boundaries in the domain.
 For an elliptic problem, all boundary edges must be specified with either Dirichlet, Neumann, or Robin conditions.
 A Dirichlet condition, where the known value of the solution is given on the boundary, $u|_{\partial\Omega}=u_0$.
-This type of boundary is known as soft, and can be interpreted as the boundary of an elastic wall that is displaced in response to a force on the outside.
+This is sometimes known as a soft boundary, and can be interpreted as the boundary of an elastic wall that is displaced in response to a force on the outside.
 A value of zero on the boundary is known as a pressure release boundary.
 If the value here is nonzero, the boundary experiences some force from the other side.
-For a Neumann boundary, the normal derivative $\vec{n}\cdot \nabla u |_{\partial \Omega} = \partial u / \partial \vec{n} |_{\partial \Omega}$ is given on the boundary.
-The physical interpretation of this is a hard boundary, that does not move in response to a force.
+For a Neumann boundary, the normal derivative $\vec{n}\cdot \nabla u |_{\partial \Omega} = \partial u / \partial \vec{n} |_{\partial \Omega}=g$ is given on the boundary.
+The physical interpretation of this is a hard boundary that does not move in response to a force.
 Lastly a Robin condition, giving both the value of the solution and the normal derivative on the boundary can be interpreted as a combination of the two above.
 
 
 
 % Sommerfeld + truncation
-In addition to boundary conditions, an additional condition on the solution must be imposed to ensure that the solution is unique since the domain of the problem is infinite.
+In addition to boundary conditions, another condition on the solution must be imposed to ensure that the solution is unique.
+This is due to the unboundedness of the domain.
 The Sommerfeld radiation condition in three dimensions is given by
 \begin{align}
 	\lim_{|x|\rightarrow \infty} |x| \left( \frac{\partial}{\partial |x|} - ik \right) u(x) = 0. \label{eqn:sommerfeld}
 \end{align}
-This achieves this requirement by ensuring that sources scatter to infinity and do not come from infinity \cite{sommerfeld}.
+This ensures that sources scatter to infinity and do not come from infinity \cite{sommerfeld}.
 
 Because the problem is defined on an infinite domain, we must perform a truncation of the domain to find the solution numerically.
 Choosing some appropriately sized region of interest surrounding the object, we restrict the domain to this region.
@@ -61,7 +68,7 @@ Spurious waves from reflections on the outer walls propagate through the domain 
 It is possible to deal with these reflections by introducing an artificial absorbing layer to the boundary of the domain.
 Several such layers exist, for instance absorbing boundary conditions (ABCs); Dirichlet-to-Neumann conditions (DtNs); and perfectly matched layers (PMLs).
 These all attempt to dampen waves in the artificial layer surrounding the domain so that there are no reflections back into the domain.
-
+The implementation of these absorbing layers is tricky due to their subtlety, and so will only be included given sufficient time.
 
 
 % ----------------------------------------------
@@ -69,18 +76,17 @@ These all attempt to dampen waves in the artificial layer surrounding the domain
 
 
 % FEM Discretisation
-In order to solve the problem, we will use the C++ library \oomph \cite{oomph} to find the solution using the finite element method.
+In order to solve the problem, we will use the C++ library \oomph  to find the solution using the finite element method \cite{oomph}.
 This process involves creating a mesh of elements, then the discretisation of the equations on each element of the mesh.
 The contribution of each element to the total problem is then combined and the result is a $n\times n$ linear system of equations,
 \begin{align}
 	A x = b.
 \end{align}
-% Direct vs Iterative methods
 This system of equations requires a solver in order to compute the solution.
 For small $A$, it is possible to use direct methods to find $x$.
 In \oomph, the default linear solver is the direct solver SuperLU.
 The benefit of a direct solver is that the computed solution to the above equation is exact, modulo any floating point errors.
-However, the computational cost is prohibitively expensive as the size of the problem increases, and even for modestly sized problems this solver fails.
+However, the computational cost becomes prohibitively expensive as the size of the problem increases, and even for modestly sized problems this solver fails.
 The alternative approach is to use iterative methods to find an approximation to the solution.
 A wide range of iterative methods have been developed to take advantage of the underlying structure of the matrix $A$.
 One particular class of methods, Krylov subspace methods, form the solution by building iterates from elements in a space of successive powers of the matrix $A$ \cite{leveque}.
@@ -95,7 +101,7 @@ This class of algorithms includes the conjugate gradient and GMRES methods, amon
 % Preconditioning
 Unfortunately, iterative methods suffer from a lack of robustness.
 As such the effectiveness of such methods can be poor in general.
-This issue has been addressed by using an approximation $P$ to $A$ that is relatively cheap to both find and invert.
+This issue can be addressed by using an approximation $P$ to $A$ that is relatively cheap to both find and invert.
 By multiplying the original system by this approximation, we can readily improve the performance of iterative methods.
 This approach is known as preconditioning, and the approximation $P$ is known as the preconditioner.
 
@@ -110,13 +116,14 @@ In this case, we have
 \end{align}
 This can be solved in two steps, 
 \begin{align}
-	&(1) \, P x = y, \\ &(2) A P^{-1} y = b.
+	P x = y, \qquad A P^{-1} y = b.
 \end{align}
 
 If we take $P=A$ as the preconditioner, we can solve the above system exactly for the case since $P^{-1}A=I$. 
 This is optimal as it solves the original problem, however it is costly to obtain.
 On the other hand, taking $P=I$ is cheap to obtain, but does not reduce the difficulty of solving the problem.
-Instead, we would like a alternative such that $P$ is cheap to find and the preconditioned system is easier to solve than the original problem.
+Instead, we would like an alternative such that $P$ is cheap to find and the preconditioned system is easier to solve than the original problem.
+
 Many general preconditioning techniques have been developed that work for a variety of problems.
 For example, preconditioning matrices based on the splitting of the matrix $A$ are simple to use and cheap to compute.
 More specific preconditioning techniques have been developed in the case of specific problems.
@@ -158,7 +165,7 @@ In another paper by the same authors, they used a multigrid to compute the preco
 This was done since at each iteration of the outer iterative method the preconditioner will change, so the method must be `flexible'.
 Saad created the Flexible GMRES iterative method, FGMRES \cite{fgmres}.
 The multigrid solver for the Helmholtz equation exists for the equation in Cartesian coordinates in \oomph.
-We would like to explore the performance of this method for the Fourier decomposed version of the Helmholtz equation in axisymmetric cylindrical coordinates.
+The aim for this project is to implement this method for the Fourier decomposed version of the Helmholtz equation in axisymmetric cylindrical coordinates and compare its performance to related problems.
 
 
 
