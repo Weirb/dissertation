@@ -2,7 +2,7 @@
 \label{sec:fem}
 
 This chapter discusses the well known and widely used method for solving partial differential equations, the finite element method (FEM).
-To avoid building and adding another library to the already vast ecosystem of available FEM software, we use the multi-physics FEM library, \oomph.
+To avoid building and adding another library or software package to the already vast ecosystem of available FEM software, we instead use the multi-physics FEM library, \oomph.
 From the website, \oomph is:
 \begin{quote}
 	an object-oriented, open-source finite-element library for the simulation of multi-physics problems. \cite{oomph}
@@ -10,8 +10,8 @@ From the website, \oomph is:
 There are several high level features of any general finite element procedure that will be addressed below.
 Discussing these features in generality allows for specificity later to any problem.
 However, we will also be explicit with description about the problem referenced earlier.
-In addition to this, an overview of specific implementation details and features available in \oomph will also be covered.
-
+In addition to this, an overview of specific implementation details and features available in \oomph will be covered.
+We begin this chapter by discussing the necessary mathematical background for the finite element method.
 
 
 
@@ -31,33 +31,33 @@ Galerkin method -> test functions are basis functions
 
 \fi
 
-We begin this chapter by discussing the necessary mathematical background for the finite element method.
-
-The classical or strong solution of a problem is a function $u_N(r,z)$ satisfying the PDE
+The classical or strong solution of a problem is a function $u_N^{\mathrm{strong}}(r,z)$ satisfying the PDE
 \begin{align}
-	\nabla^2 u_N + \left[ (1+i\alpha)k^2-\frac{N^2}{r^2}\right]u_N = 0,
+	\nabla^2 u_N^{\mathrm{strong}} + \left[ (1+i\alpha)k^2-\frac{N^2}{r^2}\right]u_N^{\mathrm{strong}} = 0,
 \end{align}
-at every point in the domain $\Omega$ and satisfying the boundary conditions
+at every point in the domain $\Omega$ and satisfying boundary conditions, such as
 \begin{align}
-	\left. u_N(r,z) \right\vert_{\partial \Omega_D} = g_D \\
-	\left. \frac{\partial u_N(r,z)}{\partial \vec{n}} \right\vert_{\partial \Omega_N} = g_N
+	\left. u_N^{\mathrm{strong}}(r,z) \right\vert_{\partial \Omega_D} = g_D, \\
+	\left. \frac{\partial u_N^{\mathrm{strong}}(r,z)}{\partial \vec{n}} \right\vert_{\partial \Omega_N} = g_N,
 \end{align}
 at every point on the respective portion of the boundary $\partial\Omega$.
+The solution to the strong form of the equation must satisfy certain smoothness requirements for its existence.
+For the equation above, we must have $u_N^{\mathrm{strong}} \in C^2(\Omega)$.
 
 The weak solution of a problem is a relaxation of the conditions for the existence of a solution to the problem.
 A weak solution $u_N^{\mathrm{weak}}(r,z)$ satisfies the essential (Dirichlet) boundary condition and that
 \begin{align}
-	\int_\Omega \left( \nabla^2 u_N + \left[ (1+i\alpha)k^2-\frac{N^2}{r^2}\right]u_N \right) v = 0,
+	\int_\Omega \left( \nabla^2 u_N^{\mathrm{weak}} + \left[ (1+i\alpha)k^2-\frac{N^2}{r^2}\right]u_N^{\mathrm{weak}} \right) v = 0,
 \end{align}
-for all test functions $v$ that are 0 on the essential boundary.
+for all test functions $v$ that are 0 on the Dirichlet boundary.
 
 The test functions are used to weight the integral of the residual equation and are members of the function space
 \begin{align}
-	H^1_0(\Omega) = \left\{ v | v=0 \mathrm{on} \partial\Omega_D, \, v \in L^2(\Omega), \, \nabla v \in (L^2(\Omega))^2 \right\}.
+	H^1_0(\Omega) = \left\{ v | v=0 \mathrm{ on } \partial\Omega_D, \, v \in L^2(\Omega), \, \nabla v \in (L^2(\Omega))^2 \right\}.
 \end{align}
 The solution $u_N^{\mathrm{weak}}(r,z)$ must satisfy the Dirichlet boundary condition, and so is a member of the space
 \begin{align}
-	H^1(\Omega) = \left\{ v | v \in L^2(\Omega), \, \nabla v \in (L^2(\Omega))^2 \right\}
+	H^1(\Omega) = \left\{ v | v \in L^2(\Omega), \, \nabla v \in (L^2(\Omega))^2 \right\}.
 \end{align}
 The function spaces $H^i(\Omega)$ are known as Sobolev spaces and are complete normed vector spaces.
 
@@ -72,9 +72,9 @@ The function spaces $H^i(\Omega)$ are known as Sobolev spaces and are complete n
 The main components of the finite element method are the nodes, the elements, and the mesh.
 A mesh is a collection of elements; an element is a collection of nodes.
 
-Each element contains data about its location within the mesh, its local coordinate within the element, as well as the value of the solution on the nodes in the element.
+Each element contains data about its location within the mesh; its local coordinate within the element; and the value of the solution on the nodes in the element.
 A mapping exists from global coordinates of the domain to the local coordinates of an element.
-The Jacobian of this mapping is used when 
+The Jacobian of this mapping is used when integrating equations on the element, since we want the solution on the domain.
 
 The number of nodes in an element determines the order of the approximation of the solution on the element.
 Recall that we can find an interpolating polynomial that passes through $p+1$ distinct points with a polynomial of degree $p$.
@@ -82,7 +82,7 @@ So for example, if there are two nodes in a one-dimensional slice of an element,
 
 The solution on the elements is represented using a basis for $H^1(\Omega)$.
 The local basis functions are defined such that there is exactly one function that takes the value one for each node on an element and 0 on all of the others.
-In Galerkin's method, the test functions are taken to be the basis functions. 
+In Galerkin's method, the test functions are taken to be these basis functions. 
 
 The FEM lends itself well to object-oriented programming (OOP) design principles.
 This is due to the discrete entities involved and the relationships between them.
@@ -90,7 +90,7 @@ Such a design strategy involves the definition of classes, and their instantiati
 Furthermore, classes may be extended using inheritance, allowing for highly abstracted and generic classes, and on the other end, highly specific classes.
 This is an advantage for both the developers and the users of \oomph.
 Developers are able to work independently of each other, knowing only how objects should interact.
-Users are able to extend previous work to suit their own needs.
+Users are able to extend previous work to suit their own needs without a full understanding of the entire codebase.
 
 
 
@@ -102,10 +102,15 @@ Users are able to extend previous work to suit their own needs.
 \section{Weak formulation}
 
 We will now derive the weak form of the CSLP equation, \eqref{eqn:cslp}.
+Note that in taking $\alpha=0$ we recover the unshifted Helmholtz equation.
+Therefore deriving the weak form for the general shifted version is sufficient for both problems.
+
 Our first step is to multiply the equation by a test function $v\in H^1_0(\Omega)$ and integrate over the domain $\Omega$.
 \begin{align}
 	-\int_\Omega \left(\nabla^2 u_N + \left[ (1+i\alpha)k^2-\frac{N^2}{r^2}\right]u_N \right) v = 0.
 \end{align}
+This must be satisfied for all test functions $v \in H^1_0(\Omega)$.
+
 Using the property of the gradient operator,
 \begin{align}
 	\nabla \cdot ( v \nabla u) = v \nabla^2 u + \nabla u \cdot \nabla v,
@@ -138,7 +143,7 @@ Since by definition, the test functions are exactly 0 on the Dirichlet portion o
 \begin{align}
 	\int_{\partial\Omega_D} v \frac{\partial u_N}{\partial \vec{n}} = 0.
 \end{align}
-We will also consider a boundary with only Dirichlet conditions, so that the Neumann part also vanishes.
+As our problem is concerned only with Dirichlet boundaries, this entire term disappears.
 
 Combining the results, we arrive at the weak form: find $u_N(r,z) \in H^1(\Omega)$ such that for all $v \in H^1_0(\Omega)$,
 \begin{align}
@@ -153,10 +158,10 @@ Combining the results, we arrive at the weak form: find $u_N(r,z) \in H^1(\Omega
 \end{align}
 
 
-One further point regarding the implementation of this within \oomph.
-Complex numbers are not handled natively within \oomph.
-Instead, a two-dimensional vector whose first and second components store the real and imaginary parts of a complex number, respectively.
-Therefore to deal with this, we split the solution $u_N$ into its real and imaginary components.
+One further point regarding the implementation of the weak form in \oomph.
+Complex numbers are not handled natively by \oomph.
+Instead a two-dimensional vector is used, whose first and second components store the real and imaginary parts of a complex number, respectively.
+To deal with this, we split the solution $u_N$ into its real and imaginary components.
 If $u_r$ is the real part of the solution and $u_c$ is the imaginary part, then
 \begin{align}
 	u_N = u_r + i u_c.
@@ -174,30 +179,28 @@ Substituting this into \eqref{eqn:weakform} and separating real and imaginary pa
 \section{Numerical integration}
 \label{sec:integration}
 
-The integrals involved in computing the solution are often too complicated evaluate analytically.
-Instead, we use a numerical integration scheme to perform the integration.
-Several methods exist to complete this task, but within \oomph, it is done using Gauss quadrature.
+The integrals involved in computing the solution are often too complicated to evaluate analytically.
+Instead, it is possible to use a numerical integration scheme to perform the integration.
+Several methods exist to complete this task, but \oomph uses Gaussian quadrature.
 
-\cite{oomph}
-Fix the dimension to be 2, so that we can talk specifics...
-The Gauss rules are defined by following three quantities:
+
+The Gauss rules for \oomph are defined by following three quantities \cite{oomph}:
 \begin{enumerate}
 	\item the number of integration points, $N_\mathrm{int}$,
 	\item the position of the integration points within an element, $S_i, \, i=1,2,\ldots,N_\mathrm{int}$,
 	\item the integration weights, $W_i, \, i=1,2,\ldots,N_\mathrm{int}$.
 \end{enumerate} 
-Given these values, we can approximate an integral by summation of the integrand evaluated at the integration points multiplied by the corresponding integration weight.
+Given these quantities, we can approximate an integral by the summation of its integrand evaluated at the integration points multiplied by the corresponding integration weight.
 
-We also must multiply by the Jacobian of the mapping from Cartesian to cylindrical coordinates.
-Recall equation \eqref{eqn:cylindrical_mapping}, which states that the Jacobian of this transformation is $r$.
-In addition, we have the transformation from global to local coordinates.
-This mapping is given by some other function
-
-Denote by $J$ the Jacobian of the mapping from global to local coordinates, then for an arbitrary element $E$, 
+We also must multiply the summation by the Jacobian of the mapping from Cartesian to cylindrical coordinates and the Jacobian of the mapping from global to local coordinates.
+Recall equation \eqref{eqn:cylindrical_mapping}, which states that the Jacobian of the cylindrical transformation is $r$.
+The choice of mapping from global to local coordinates depends on the element shapes.
+Denote by $J$ the Jacobian of the mapping from global to local coordinates.
+Then for any element $E$, 
 \begin{align}
-	\iint_E f(r,z) r \,\d r \,\d z = \int_{-1}^1 \int_{-1}^1  f(s_1, s_2) J \, \d s_1 \, \d s_2 = \sum_{i=1}^{N_\mathrm{int}} f(S_{i,1},S_{i,2}) 
+	\iint_E f(r,z) r \,\d r \,\d z = \int_{-1}^1 \int_{-1}^1  f(s_1, s_2) J s_1 \, \d s_1 \, \d s_2 = \sum_{i=1}^{N_\mathrm{int}} \tilde{f}(S_{i,1},S_{i,2}),
 \end{align}
-
+where $s_1$ and $s_2$ are the local coordinate variables and $f$ is an arbitrary function.
 
 
 
@@ -218,7 +221,7 @@ Use this to generate the grids for Multigrid
 \fi
 
 There are several variations of refinement that can improve the accuracy of the finite element solution.
-In addition to gains in solution accuracy, refinement is the method that we will generate the grid hierarchy for multigrid.
+In addition to gains in solution accuracy, refinement is the method used to generate the grid hierarchy for multigrid.
 This is done by performing multiple refinements to achieve the finest level of refinement, then unrefining to obtain each coarse level.
 More discussion of the grids used in multigrid is in chapter \ref{sec:mg}; here we will discuss the specific use of refinement within the FEM.
 The largest scale of the solution can be at most at the scale of the mesh, so often refinement is necessary to resolve the exact features of the solution.
@@ -227,7 +230,7 @@ Each method of refinement comes with costs and benefits, as well as different co
 % Uniform refinement
 The simplest case is uniform h-refinement.
 In h-refinement, elements are subdivided into multiple new elements, reducing the element width and increasing the resolution of the mesh.
-In uniform refinement, the entire mesh is refined by subdividing every element.
+In uniform refinement, the entire mesh is refined by subdividing every element evenly.
 This increases the storage and computational cost of the method, but leads to a reduction in the solution error.
 Figure \ref{fig:uniform} shows an example of a mesh consisting of four elements on the left and the result on the right after the application of uniform h-refinement.
 We can see here that each element has been split into four new elements, each with element width half of the original element.
@@ -237,14 +240,14 @@ Beyond uniform refinement is adaptive refinement.
 In certain cases where parts of the solution domain are singular or
 In problems such as those involving boundary layers, for example in fluid dynamics, the solution may be highly varying in only one specific region.
 By using an error estimator, it is possible to determine the areas of the mesh that require refinement.
-Using uniform refinement on this problem, the grid size of the mesh will be reduced across the whole mesh, increasing computational cost.
-Adaptive refinement has the benefit that computation is not wasted on computing the solution in regions where a sufficiently large mesh size is more appropriate.
+Using uniform refinement on this problem, the grid size will be reduced across the whole mesh, increasing computational cost and storage requirements.
+Adaptive refinement has the benefit that resources are not wasted on computing the solution in regions where a larger mesh size is more appropriate.
 
 However, adaptive refinement can introduce hanging nodes to the mesh.
 Hanging nodes occur when a node is not shared between surrounding elements.
 The problem with this type of node is that inter-element continuity of the solution is lost.
 To overcome hanging nodes, we must impose constraints on the nodal values so that continuity between elements is maintained.
-We will focus only on uniform refinement in this project and not discuss further adaptive refinement.
+We will focus only on uniform refinement in this project and not discuss adaptive refinement further.
 
 Figure \ref{fig:adaptive} shows an example of a mesh consisting of four elements on the left and the result on the right after the application of adaptive h-refinement.
 On the right mesh, the element in the top right corner has been refined, while the others remain the same.
@@ -329,14 +332,14 @@ Obtain the finite element solution.
 \fi
 
 Given an infinite set of basis functions $\{ \phi_k \}_{k=1}^\infty$ that span $H^1_0(\Omega)$, we can represent any member of this space in terms of the basis.
-We can split the solution into two parts, the first satisfying the homogeneous boundary $u_h(r,z)$, and the second satisfying the Dirichlet boundary $u_p(r,z)$.
+Splitting the solution into two parts, the first satisfying the homogeneous boundary $u_h(r,z)$, and the second satisfying the Dirichlet boundary $u_p(r,z)$, we can write
 \begin{align}
 	u_N(r,z) = u_p + u_h = u_p + \sum_{j=1}^\infty u_j \phi_j,
 \end{align}
 for some unknown coefficient values $u_j$.
 Ignoring $u_p$ for the minute, if we substitute this form of the solution into equation \eqref{eqn:weakform} and simplify, we obtain an equation for the residual $b$ in terms of the unknowns $u_j$,
 \begin{align}
-	b(u_1,u_2,\ldots) = \sum_{j=1}^\infty u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla v - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j v \right]. \label{eqn:galerkin}
+	b(u_1,u_2,\ldots) = \sum_{j=1}^\infty u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla v - \left( (1+i\alpha)k^2 - \frac{N^2}{r^2}\right) \phi_j v \right]. \label{eqn:galerkin}
 \end{align}
 
 Since the test function $v$ is a member of the space spanned by the basis functions, we can expand the test function in terms of this basis,
@@ -346,7 +349,7 @@ Since the test function $v$ is a member of the space spanned by the basis functi
 And because the weak form must be satisfied for all test functions $v$, it is the case that the weak form must be satisfied for all values of the coefficients $v_i$.
 Substituting this form of the test function into equation \eqref{eqn:galerkin}, the following must be satisfied for $i=1,2,\ldots$
 \begin{align}
-	b_i(u_1,u_2,\ldots)=\sum_{j=1}^\infty u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j \phi_i \right].
+	b_i(u_1,u_2,\ldots)=\sum_{j=1}^\infty u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 - \frac{N^2}{r^2}\right) \phi_j \phi_i \right].
 \end{align}
 
 
@@ -359,16 +362,17 @@ If we reduce our basis set to a total of $M$ functions, then the approximation t
 
 Then we have a $M\times M$ system of equations 
 \begin{align}
-	b_i = \sum_{j=1}^M u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j \phi_i \right],
+	b_i = \sum_{j=1}^M u_j \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 - \frac{N^2}{r^2}\right) \phi_j \phi_i \right],
 \end{align}
 for $i=1,2,\ldots,M$.
 The Jacobian matrix $A$ can be computed 
 \begin{align}
-	A_{ij} = \frac{\partial b_i}{\partial u_j} = \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 + \frac{N^2}{r^2}\right) \phi_j \phi_i \right]
+	A_{ij} = \frac{\partial b_i}{\partial u_j} = \int_\Omega \left[ \nabla \phi_j \cdot \nabla \phi_i - \left( (1+i\alpha)k^2 - \frac{N^2}{r^2}\right) \phi_j \phi_i \right].
 \end{align}
 
 Newton's method is the general purpose solver used in \oomph to find the finite element solution.
-To solve the general nonlinear problem arising from a finite element discretisation, an iterative method must be used to determine the solution.
+In general, the problem will be nonlinear and so an iterative method to solve a nonlinear problem is required.
+An initial guess is given and the iteration finds the finite element solution.
 For our specific case the problem is linear, so Newton's method will converge in exactly one iteration to the exact solution in floating point arithmetic.
 
 The integrals can be evaluated using quadrature rules mentioned in section \ref{sec:integration} to obtain the Jacobian matrix and the residual vector.
@@ -376,6 +380,7 @@ Once the vector of residuals $b$, and the Jacobian matrix $A$, have been compute
 \begin{align}
 	A x = -b.
 \end{align}
-This determine the coefficients $u_j$ in the expansion of the solution \eqref{eqn:trunc}.
+To solve the general nonlinear problem arising from a finite element discretisation, an iterative method must be used to determine the solution.
+This determines the coefficients $u_j$ in the expansion of the solution \eqref{eqn:trunc}.
 The default solver within \oomph for finding the solution to this linear system is the direct solver SuperLU.
 This is the point at which we swap the default solver with our implementation of the preconditioned multigrid solver.
