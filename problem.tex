@@ -24,9 +24,9 @@ Helmholtz problem:
 \fi
 
 The end goal is to solve the Helmholtz equation in cylindrical coordinates in an unbounded three-dimensional domain, with symmetry about the $z$-axis.
-Simplifying slightly, we assume Dirichlet boundary conditions on all of the boundaries of the domain.
-This removes the unboundedness of the domain for the purposes of testing the solver on the problem.
-Exploiting the symmetry of the problem allows us to decompose the solution into its Fourier components and reduce the problem to two dimensions.
+Simplifying slightly, we assume a finite domain with Dirichlet boundary conditions on the exterior walls.
+We also assume that the object has vertical length equal to the height of the domain, also with Dirichlet boundary conditions.
+This is justified since we are not interested in the solution to the problem, rather than the behaviour of the method in finding the solution.
 
 In this chapter, we will derive the formal statement of the problem starting from the wave equation.
 Also included here is a discussion of the topics relevant to the practical solution of the problem.
@@ -43,8 +43,8 @@ Consider the three dimensional wave equation with wave speed $c$,
 \begin{equation}
 	\frac{1}{c^2} \frac{\partial^2 u(x,y,z,t)}{\partial t^2} = \nabla^2 u(x,y,z,t). \label{eqn:wave}
 \end{equation}
-As in \cite{oomph_hh}, we assume the existence of a separable solution where the time component of the solution is time-harmonic with frequency $\omega$,
-we may write the real-valued solution as
+Following \cite{oomph_hh}, we assume the existence of a separable solution where the time component of the solution is time-harmonic with frequency $\omega$.
+We may write the real-valued solution as
 \[
 	u(x,y,z,t) = \Re \left( U(x,y,z)e^{-i\omega t} \right),
 \]
@@ -55,7 +55,7 @@ Substituting this into \eqref{eqn:wave}, we obtain the Helmholtz equation
 \end{equation}
 where the wavenumber $k$ is defined as
 \begin{align}
-	k = \frac{\Omega}{c}.
+	k = \frac{\omega}{c}.
 \end{align}
 
 The mapping between Cartesian coordinates $(x,y,z)$ and cylindrical polar coordinates $(r,\varphi,z)$ is given by
@@ -69,7 +69,7 @@ The Jacobian of this mapping is given by
 	J = \left\vert \frac{\partial(x,y,z)}{\partial(r,\varphi,z)} \right\vert = r. \label{eqn:cylindrical_mapping}
 \end{align}
 This mapping transforms our equation from $U(x,y,z)$ into $U(r,\varphi,z)$, 
-which we may decompose into its Fourier components $u_N(r,z)$ around the $\varphi$ axis, so that
+which we may decompose into its Fourier components $u_N(r,z)$ around the $z$-axis, so that
 \begin{equation}
 	U(r,\varphi,z) = \sum_{N=-\infty}^\infty u_N(r,z) e^{iN\varphi}. \label{eqn:full_eqn}
 \end{equation}
@@ -92,14 +92,14 @@ We also define the reduced Laplacian in cylindrical coordinates, consisting of o
 It is not necessary to distinguish between the two operators \eqref{eqn:laplacian} and \eqref{eqn:laplacian_reduced}.
 In the case of a function in $(r,\varphi,z)$, then the full cylindrical Laplacian is required.
 Alternatively, for a function in $(r,z)$, the reduced cylindrical Laplacian is appropriate.
-Therefore it should be implicit from the context of the equation.
+Therefore the distinction should be implicit from the context of the equation.
 
 Hence above, we wish to extract those terms consisting of $\varphi$ from \eqref{eqn:full_eqn}.
 The partial derivatives with respect to $\varphi$ give
 \begin{align}
 	\frac{1}{r^2} \frac{\partial^2 }{\partial \varphi^2} \left( e^{i N \varphi}\right) = - \frac{N^2}{r^2} e^{i N \varphi}.
 \end{align}
-The full equation then becomes
+The Laplacian term of the equation is
 \begin{align}
 	\nabla^2 U(r,\varphi,z) 
 		&= \nabla^2 \left[\sum_{N=-\infty}^\infty u_N(r,z) e^{i N \varphi}\right] \\
@@ -107,6 +107,7 @@ The full equation then becomes
 										\nabla^2 u_N(r,z) - \frac{N^2}{r^2}u_N(r,z)
 								   \right] e^{i N \varphi}.
 \end{align}
+We can then add on the $k^2$ term to find the full equation.
 
 Since we can solve each term in the series separately, we can extract a single equation for each $N$.
 This gives us the Fourier decomposed Helmholtz equation,
@@ -143,15 +144,15 @@ Introducing a shift to the complex plane, the Helmholtz operator in Cartesian co
 \end{align}
 where $\alpha$ is a positive real number controlling the offset from the real axis.
 
-Since our equation is defined in Fourier decomposed cylindrical coordinates, we obtain 
+Since our equation is defined in Fourier decomposed cylindrical coordinates, we obtain for the Fourier decomposed Helmholtz equation,
 \begin{align}
 	\nabla^2 u_N(r,z) + \left[ \left( 1 + i \alpha \right) k^2 - \frac{N^2}{r^2} \right] u_N(r,z) = 0.
 \end{align}
 Here, the shift is still applied to the $k^2$ term, but we have the additional term from \eqref{eqn:fhh}.
 
 The optimal value of $\alpha$ is determined in \cite{cslp2}.
-Specifically, they state that taking $\alpha=0.5$ results in the best possible.
-In all of our numerical experiments, we use this value for preconditioning FGMRES with multigrid.
+Specifically, they state that taking $\alpha=0.5$ yields the best possible results.
+In all of our numerical experiments, we will use this value for the multigrid preconditioner.
 
 
 
@@ -164,8 +165,8 @@ In all of our numerical experiments, we use this value for preconditioning FGMRE
 
 \section{Related problems and other issues}
 
-In the case where $k=0$, the problem reduces to the Poisson problem \eqref{eqn:poisson} with $f=0$, otherwise known as Laplace's equation.
-Taking $k=0$ in equation \eqref{eqn:fhh}, we obtain
+In the case where $k^2=0$, the problem reduces to the Poisson problem \eqref{eqn:poisson} with $f=0$, otherwise known as Laplace's equation.
+Taking $k^2=0$ in equation \eqref{eqn:fhh}, we obtain
 \begin{align}
 	\nabla^2 U(r,\varphi,z) = \nabla^2 u_N(r,z) - \frac{N^2}{r^2} u_N(r,z) = 0. \label{eqn:fp}
 \end{align}
@@ -175,7 +176,7 @@ The Poisson equation is of interest because of the close relation between the He
 It is known that multigrid performs optimally for Poisson's equation.
 Since we are interested in how multigrid performs when solving \eqref{eqn:fhh}, we will compare results with this equation.
 
-Another related problem is the case when both $k=0$ and $N=0$.
+Another related problem is the case when both $k^2=0$ and $N=0$.
 This is the Poisson equation in reduced axisymmetric coordinates, where the solution depends only on $r$ and $z$.
 To further aid in comparison between solutions, we will also consider how the equation behaves in this case.
 
@@ -189,7 +190,7 @@ This is seen in the operator
 	\nabla^2 + k^2 = \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial t^2} + \frac{\partial^2}{\partial z^2} + k^2.
 \end{align}
 
-In cylindrical coordinates, however, we have a term that varies proportionally to the inverse of the radial distance squared.
+In cylindrical coordinates, however, we have a terms that vary proportionally to the inverse of the radial distance and the radial distance squared.
 For the Fourier decomposed Helmholtz equation, recall equation \eqref{eqn:fhh},
 \begin{align}
 	\frac{\partial^2 u_N}{\partial r^2}
@@ -197,7 +198,7 @@ For the Fourier decomposed Helmholtz equation, recall equation \eqref{eqn:fhh},
 			 + \frac{\partial^2 u_N}{\partial z^2}
 			 + (k^2 - \frac{N^2}{r^2})u_N = 0. \label{eqn:full_fhh}
 \end{align}
-As suggested in \cite{briggs}, this may cause issues with multigrid.
+As suggested in the literature, this may cause issues with multigrid.
 A test of the method should be performed first to confirm before attempting to remedy potentially non-existent issues with variable coefficients.
 
 
@@ -215,7 +216,7 @@ A test of the method should be performed first to confirm before attempting to r
 The full wave equation \eqref{eqn:wave} is defined in three spatial dimensions and one temporal dimension.
 The full cylindrical Helmholtz equation \eqref{eqn:full_eqn} is defined in a cylinder in three spatial dimensions.
 If we let the cylindrical domain have a maximum radius of $R_{\mathrm{max}} > 0$, and let the domain contain a cylindrical cavity with some maximum radius $0<R_{\mathrm{min}}<R_\mathrm{max}$.
-Then resulting domain is shown in figure \ref{fig:full_domain}.
+The resulting domain is shown in figure \ref{fig:full_domain}.
 
 In the reduced $(r,z)$ coordinates for the Fourier decomposed equation \eqref{eqn:fhh}, the domain becomes \ref{fig:reduced_domain}.
 This simplification aids in the computational work by reducing the number of degrees of freedom of the problem.
@@ -380,5 +381,4 @@ Since the only purpose of this exact solution is for validation of a correct imp
 In doing so, we may then specify that the boundary conditions for the PDE must correspond with the exact solution.
 That is, since we know a priori the solution of the equation, we let the boundary conditions be exactly the value of the solution on the boundary.
 This has the benefit of finding the solution we have found above for us to check the method against.
-Although this has the distinct disadvantage that we do not make use of any boundary conditions besides Dirichlet.
-We will address this at a later with the introduction of Neumann and Sommerfeld boundary conditions.
+Although this has the distinct disadvantage that we do not make use of any boundary conditions besides Dirichlet conditions.
