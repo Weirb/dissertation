@@ -13,19 +13,19 @@
 
 
 The results of the numerical experiments carried out are detailed below.
-We wish to compare the outcomes to existing literature of Cartesian Helmholtz as well as cylindrical Poisson problems.
+We wish to compare our solver to the existing literature for the Cartesian Helmholtz equation as well as cylindrical Poisson problem.
 The data collected were CPU timings of SuperLU and multigrid for the parameter pairs $(k^2,N)$ listed in table \ref{tab:params}.
 Data were also gathered on the number of iterations taken for FGMRES to converge for the multigrid preconditioner.
 
-Solutions were computed on a rectangular mesh of the problem domain, $\Omega = [1,2] \times [0,1]$.
+Solutions were computed on a rectangular mesh of the problem domain, $\Omega = [1,2] \times [0,1]$ with Dirichlet conditions on each boundary.
 The domain was meshed with a rectangular quadmesh, with ten elements in each direction on the coarsest level.
-The elements used were quadratic, quadrilateral elements, consisting of four nodes on each element.
+The elements used were quadratic, quadrilateral elements consisting of three nodes in each one-dimensional slice of an element, for a total of nine nodes.
 The tolerance for FGMRES to accept the solution and break the iteration was set to be $1.0\times 10^{-10}$.
 
 The values of $N$ presented here are relatively small.
 Specifically, we report numerical experiments using two different values of $N$: 0 and 5.
 Larger values of $N$ pose a significant problem to both the iterative and direct solvers.
-The Newton method does not converge in one iteration.
+Namely that the Newton method does not converge in one iteration.
 This is the case for even modest values of $N$.
 A solution to this was found by shifting the minimum value of the domain on the $r$-axis to be equal to approximately $N$.
 Instead of using this fix, we keep the domain the same for all experiments, but focus only on the small values of $N$ known to work.
@@ -34,7 +34,7 @@ The machines used to run the numerical experiments had a total of 130GB of RAM.
 Unfortunately this means that when the number of degrees of freedom of the problem reached $1.3\times 10^7$, equivalent to seven refinement levels, the computer ran out of memory.
 Because of this, only six data points have been gathered for each individual problem, corresponding to the six levels of refinement that were able to run.
 This appears to be sufficient to begin to see the trend in the data, as can be seen below.
-The direct solver SuperLU is responsible for this drawback in the results, and multigrid performed adequately for even more levels of refinement.
+The direct solver SuperLU is responsible for this drawback in the results, and multigrid performed adequately for even more levels of refinement not reported here.
 
 
 \bgroup
@@ -63,7 +63,10 @@ The direct solver SuperLU is responsible for this drawback in the results, and m
 % Brief discussion of the two, don't need to go on
 
 
-Blah blah the solution \ref{fig:solution}
+Figure \ref{fig:solution} shows the computed solution by multigrid when $k^2=100$ and $N=5$.
+Note that the solution does not appear to have a wave-like quality.
+This is important to note, however, the performance of the method is indendent of the physical application or interpretation of the solution.
+Since the exact solution and the computed solution match, we are justified in ignoring this detail.
 
 We can see from figure \ref{fig:sol_error} that increasing the resolution of the mesh decreases the error.
 Each additional level of initial refinement reduces the element width by a factor of two, and in turn reduces the error by a factor of eight.
@@ -81,23 +84,23 @@ As the error is decreasing upon refinement, we can assert that the computed solu
 
 \section{Timings}
 
-Multigrid is an optimal solver as the time complexity of the algorithm is linear in the number of degrees of freedom in the problem.
+Multigrid is an optimal solver because the time complexity of the algorithm is linear in the number of degrees of freedom in the problem.
 Direct solvers perform far worse in comparison, with scaling that is often at least quadratic in the degrees of freedom.
 The particular direct solver we are comparing against is SuperLU, which is a sparse direct solver that takes advantage of the matrix structure.
 In general then, we expect multigrid to outperform SuperLU.
 
 Figures \ref{fig:time1} and \ref{fig:time2} compare the run times of multigrid and SuperLU for the $N=5$ and $N=0$ cases for the Poisson and Helmholtz equations.
-It is clear from these figures that multigrid eventually outperforms SuperLU, despite the lacking number of data points.
+It is clear from these figures that multigrid eventually outperforms SuperLU.
 However, there is a significant setup cost in using multigrid to solve these problems.
 This leads to the SuperLU solver being preferred for small problem sizes.
 
-When $k^2=100$ and $N=5$, the point at which multigrid outperforms SuperLU is approximately $5.0\times 10^5$.
+When $k^2=100$ and $N=5$, the point at which multigrid outperforms SuperLU is at approximately $5.0\times 10^5$ degrees of freedom.
 For the Poisson problem when $k^2=0$, the point at which multigrid outperforms SuperLU is much lower than the Helmholtz problem.
 This is also true in both cases where $N=0$ in figure \ref{fig:time2}, where the point at which multigrid begins to outperform SuperLU comes much sooner.
 This point is at approximately $8.0\times 10^4$ degrees of freedom for both Poisson and Helmholtz problems.
 
 The gradient of the line through the multigrid data points on the log-log axis is approximately equal to one for all of the problems.
-This is precisely in line with the theoretical result of the time-complexity, namely that the execution time scales linearly with the number of degrees of freedom in the problem.
+This is precisely in line with the theoretical result of the time complexity, namely that the execution time scales linearly with the number of degrees of freedom in the problem.
 For the gradient of the line through the SuperLU data, the value is approximately two, which is also what we expect from this solver.
 
 When choosing which solver between the two to use, the primary consideration should be the size of the problem.
@@ -119,8 +122,8 @@ The number of FGMRES iterations to reach convergence tolerance should remain rel
 This was demonstrated by Elman, Ernst, and O'Leary in \cite{elman} for the Helmholtz problem in Cartesian coordinates.
 Tables \ref{tab:iter1} and \ref{tab:iter2} show the behaviour of the iteration count for several different refinement levels when $N=5$ and $N=0$, respectively.
 It can be seen here that our results match closely with the literature for small values of $k^2$., where we obtain relatively similar iteration counts for the solving problem with multigrid preconditioned FGMRES.
-However, when $k^2$ becomes large, the iteration counts are less constant and are much larger than reported in \cite{elman}, but the iteration decreases upon refinement.
-The behaviour tends towards a constant value as refinement increases, but is still larger than what might have been expected.
+However, when $k^2$ becomes large, the iteration counts are less constant and are much larger than reported in \cite{elman}, but the iteration counts decrease upon refinement.
+The behaviour tends towards a constant value as the number of refinements increases, but is still larger than what might have been expected.
 This holds true for both values of $N$ that were tested.
 
 
@@ -136,7 +139,7 @@ This holds true for both values of $N$ that were tested.
             & 0 & 10 & 20 & 50 & 100 \\ \hline
         },
         table foot={ % Table footer is the last line
-            \caption{\label{tab:iter1} Number of iterations taken for FGMRES to converge to tolerance for $N=5$.}
+            \caption{\label{tab:iter1} Number of iterations taken for FGMRES to converge to tolerance for various levels of refinement and values of $k^2$. Fourier wavenumber is $N=5$.}
         },
         late after line=\\,
         no head, % Does the data file have a header?
@@ -156,7 +159,7 @@ This holds true for both values of $N$ that were tested.
             & 0 & 10 & 20 & 50 & 100 \\ \hline
         },
         table foot={ % Table footer is the last line
-            \caption{\label{tab:iter2} Number of iterations taken for FGMRES to converge to tolerance for $N=0$.}
+            \caption{\label{tab:iter2} Number of iterations taken for FGMRES to converge to tolerance for various levels of refinement and values of $k^2$. Fourier wavenumber is $N=0$.}
         },
         late after line=\\,
         no head, % Does the data file have a header?
@@ -219,7 +222,7 @@ This holds true for both values of $N$ that were tested.
         \end{loglogaxis}
         \end{tikzpicture}
     }
-    \caption{Plot of the computed solution using multigrid and the corresponding error between the exact and computed solutions for multiple levels of refinement.}
+    \caption{Plot of the computed solution using multigrid and the corresponding log-log plot of the error between the exact and computed solutions for multiple levels of refinement.}
 \end{figure}
 
 
@@ -258,7 +261,7 @@ This holds true for both values of $N$ that were tested.
     }
 
 
-    \subfloat[][Poisson equation.]{
+    \subfloat[][Poisson equation $(k^2=0)$.]{
         \centering
         \begin{tikzpicture}
         \centering
@@ -339,5 +342,5 @@ This holds true for both values of $N$ that were tested.
         \end{tikzpicture}
     }
 
-    \caption{\label{fig:time2} Time taken to solve the axisymmetric versions of the Poisson and Helmholtz equations with $N=0$.}
+    \caption{\label{fig:time2} Comparison of the time taken to solve the Helmholtz and Poisson equations using the multigrid and SuperLU solvers for $N=0$.}
 \end{figure}

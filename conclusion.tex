@@ -3,7 +3,7 @@
 The work completed in this project has led to the successful development of a solver for the Helmholtz equation in Fourier decomposed cylindrical coordinates.
 We have built on the existing machinery for the Helmholtz equation in Cartesian coordinates and created the necessary extensions required for finding the solution in this case.
 
-Results gathered in the previous chapter demonstrate that the cylindrical and Cartesian Helmholtz equations behave similarly.
+Results gathered and reported in the previous chapter demonstrate that the cylindrical and Cartesian Helmholtz equations behave similarly.
 When $k^2$ becomes larger, this is less so, however the method is still convergent for large values of the wavenumber.
 
 A discussion of the issues that might have caused problems were detailed.
@@ -11,7 +11,7 @@ For example, the problem with variable coefficients for the multigrid iteration 
 In the end, these issues were successfully overcome or did not pose a problem at all.
 The shifted-Laplacian preconditioner works well in the change of variables, with results consistent with the existing literature.
 
-In summary, it has been shown that a multigrid based preconditioner for FGMRES is a viable method for solving the finite element discretisation of the Fourier decomposed Helmholtz equation in cylindrical coordinates.
+In summary, we have shown that a multigrid based preconditioner for FGMRES is a viable method for solving the finite element discretisation of the Fourier decomposed Helmholtz equation in cylindrical coordinates.
 
 
 
@@ -22,13 +22,17 @@ In summary, it has been shown that a multigrid based preconditioner for FGMRES i
 \section{Further work}
 
 This work has only considered and implemented Dirichlet boundaries.
-A first step to extend the results would be to introduce other boundary conditions, including absorbing boundary conditions.
+A first step to extend the results would be to introduce other boundary conditions, including the Sommerfeld radiation condition using PMLs.
 The simplifications were appropriate for initial work, but applications likely will involve non-essential boundaries.
 For this work to be of any use in the future, this should be handled first.
 
 Increasing the Fourier wavenumber $N$ causes issues for both the multigrid and SuperLU solvers.
 This is likely caused because the equation is incorrectly scaled.
 Appropriately scaling the equation should resolve the problem.
-Alternatively, we can shift the mesh to increase the minimum value of $r$ so that it is approximately equal to $N$.
+The current approach to overcome this problem is to shift the mesh to increase the minimum value of $r$ so that it is approximately equal to $N$.
 Implementing a more robust method for handling large $N$ and an accompanying convergence study should be performed.
 
+We have assumed that the object located in the domain has height equal to the height of the domain.
+This should be addressed by fixing some vertical length for the object and meshing the domain around.
+The resulting object would be a rectangle in the Fourier decomposed coordinates, and a cylinder in the full cylindrical coordinates.
+A general implementation for complex object geometries could be developed beyond this.
