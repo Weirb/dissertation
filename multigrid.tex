@@ -32,7 +32,7 @@ Low frequency components on a coarse mesh are high frequency, thus are damped ra
 			 Notice here that high frequency errors are damped fast, while low frequencies persist after several iterations.}
 \end{figure}
 
-The description above is the outline for the two-grid method, on which many other multgrid methods are based \cite{hackbusch}.
+The description above is the outline for the two-grid method, on which many other multigrid methods are based \cite{hackbusch}.
 For instance, the MG V-cycle may be thought of as a recursive scheme by performing an additional two-grid iteration on each coarser grid.
 In this sense, we move from a fine mesh to coarser and coarser grids by restriction until we may solve the system directly.
 Then we move the solution back to the finest level by prolongation until we are at the desired mesh level. 
@@ -243,7 +243,7 @@ Two transfer operators are required for each mesh level, except for on the fines
 In these cases, a restriction for the coarsest level and a prolongation for the finest level are not needed.
 For each possible level of refinement, we create a prolongation matrix.
 Consider a given level of refinement and call the mesh at this level the coarse mesh and the one at the next level the fine mesh.
-Loop over all of the elements in the fine mesh, and then for each node in the element, compute the contribution to the matrix that the node takes from its posisiton in the coarse mesh.
+Loop over all of the elements in the fine mesh, and then for each node in the element, compute the contribution to the matrix that the node takes from its position in the coarse mesh.
 The total contribution is put into the transfer matrix, taking the solution from the coarse mesh to the fine mesh.
 The restriction matrix can then be defined to be the transpose of the prolongation matrix.
 
