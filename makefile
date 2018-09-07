@@ -12,6 +12,11 @@ only: first
 	pdflatex "\def\only{1} \input{$(INPUT).tex}"
 	make move
 
+word: first
+	pdflatex "\def\nopreamble{1} \input{$(INPUT).tex}"
+	pdflatex "\def\nopreamble{1} \input{$(INPUT).tex}"
+	make move
+
 first:
 	pdflatex $(INPUT).tex
 	bibtex $(INPUT)

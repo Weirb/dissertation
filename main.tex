@@ -75,18 +75,20 @@
 \bibliography{bibliography}
 \bibliographystyle{plain}
 
-\appendix
-\chapter{Code listings}
+\ifdefined\nopreamble
+\else
+  \appendix
+  \chapter{Code listings}
 
-This code has been adapted from existing sources within the \oomph codebase.
-For a complete directory of code, consult the \oomph repository at the website \cite{oomph}.
-The changes included here are those necessary for this project.
+  This code has been adapted from existing sources within the \oomph codebase.
+  For a complete directory of code, consult the \oomph repository at the website \cite{oomph}.
+  The changes included here are those necessary for this project.
 
-\section{Driver code}
-\lstinputlisting[language=C++,caption=Filename: main.cc. Driver code containing main entry point to the program.]{../oomph/user_drivers/billy/main.cc}
+  \section{Driver code}
+  \lstinputlisting[language=C++,caption=Filename: main.cc. Driver code containing main entry point to the program.]{../oomph/user_drivers/billy/main.cc}
 
-\clearpage
-\section{Element code}
-\lstinputlisting[language=C++,caption=Filename: refineable\_pml\_helmholtz\_elements.cc. Element code for the refineable version of the Fourier decomposed Helmholtz equation.]{../oomph/user_drivers/billy/SourceFiles/refineable_pml_helmholtz_elements.cc}
-
+  \clearpage
+  \section{Element code}
+  \lstinputlisting[language=C++,caption=Filename: refineable\_pml\_helmholtz\_elements.cc. Element code for the refineable version of the Fourier decomposed Helmholtz equation.]{../oomph/user_drivers/billy/SourceFiles/refineable_pml_helmholtz_elements.cc}
+\fi
 \end{document}
