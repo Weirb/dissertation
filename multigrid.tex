@@ -4,64 +4,53 @@
 
 \section{Multigrid methods}
 
-Multigrid refers to a family of methods that several meshes with different resolutions in order to achieve high rates of convergence to solve linear systems.
-These methods were developed to solve discretisation of elliptic partial differential equations, such as the Poisson problem.
-The algorithm time complexity is linear in the number of equations, making multigrid an optimal solver for many problems.
-Multigrid can be applied iteratively as a solver or as a preconditioner to find the solution to a linear system.
-For our problem, we will solve the Helmholtz equation by using multigrid as a preconditioner for the FGMRES iterative method.
+Multigrid refers to a family of methods that uses several meshes with different grid resolutions in order to achieve high rates of convergence to solve linear systems.
+These methods were developed to solve linear systems arising from discretisations of elliptic partial differential equations, such as the Poisson problem.
+The algorithm time complexity is linear in the number of degrees of freedom, making multigrid an optimal solver for many problems.
+Multigrid can be applied iteratively as a stand-alone solver or as a preconditioner for another iteartive method.
+For our problem, we solve the Fourier decomposed Helmholtz equation by using multigrid as a preconditioner for the FGMRES iterative method.
 
 First, let us motivate multigrid by considering the convergence behaviour of Jacobi iteration for a model problem.
-The problem we will use for demonstration purposes is Laplace's equation in one dimension on the unit interval with homogeneous boundary conditions,
+To demonstrate, we will use Laplace's equation in one dimension on the unit interval with homogeneous boundary conditions,
 \begin{align}
 	u''(x) = 0, \qquad u(0)=u(1)=0.
 \end{align}
 The exact solution to this problem is $u\equiv 0$.
-Using finite differences to solve this problem, we discretise the equation with a second order centred difference scheme on a mesh with $N+2$ points.
-The two end points $u_0$ and $u_{N+1}$ are known by the boundary values, so then we have for $1 \leq i \leq N$,
+
+We use the method of finite differences to discretise the equation with a second order centred difference scheme on a mesh with $N+2$ points.
+The grid spacing is given by
+\begin{align}
+	h=\frac{1}{N+1},
+\end{align}
+and the grid points are discretised with $x_i = i h$, for $0\leq i \leq N+1$.
+The two end points $u_0$ and $u_{N+1}$ are given, so then we have for $1 \leq i \leq N$,
 \begin{align}
 	\frac{u_{i-1} - 2u_i + u_{i+1}}{h^2} = 0.
 \end{align}
-This discretisation results in a linear system of equations,
-\begin{align}
-	\begin{pmatrix}
-		-2 	& 	1 	& & \\
-		1	&	-2	&	1	& \\
-		& 1 & \ddots & \ddots & \\
-		 && \ddots & \ddots & 1 \\
-		&&&1&-2
-	\end{pmatrix} \begin{pmatrix}
-		u_1 \\ u_2 \\ \vdots \\ u_{N-1} \\ u_N
-	\end{pmatrix} = 0,
-\end{align} 
-which can now be solved iteratively using the Jacobi method.
+This discretisation results in a linear system of equations that can now be solved iteratively using the Jacobi method.
 
 For a matrix splitting of $A=D-(L+U)$, where $D$ consists of the diagonal entries of $A$ and $L+U$ consists of the remaining entries, the Jacobi iteration matrix is given by
 \begin{align}
-	B = -D^{-1} \left( L+U \right) = D^{-1} \left( D - A \right) = I - D^{-1} A
+	B = -D^{-1} \left( L+U \right).
+\end{align}
+Denote by $u^{(i)}$ the $i^{\mathrm{th}}$ iterate of the Jacobi method.
+Then the error in the solution can be written in terms of the iteration matrix as,
+\begin{align}
+	e^{(i)} = u - u^{(i)} = B^i e^{(0)}
 \end{align}
 
-Denote by $u^{(i)}$ the $i^{\mathrm{th}}$ iterate of the Jacobi method.
-Then the error in the solution can be written as
-\begin{align}
-	e^{(i)} = u - u^{(i)}.
-\end{align}
 Figure \ref{fig:error1} shows the initial error for a random initial guess $u^{0}$.
-Applying several iterations of the Jacobi algorithm and examining the result, we see can see the primary difference in 
-High frequency components of the error are damped rapidly by the Jacobi iteration, while the low frequency components of the error remain even after several iterations.
-This can mean that for large problems, the error will only begin to reduce after several orders of magnitude of iterations.
+We see can see the effect in figure \ref{fig:error2} of applying several iterations of the Jacobi algorithm. 
+High frequency components of the error are damped rapidly by the Jacobi iteration, while the low frequency components of the error remain.
+This can mean that for large problems, the error will begin to reduce sufficiently only after several orders of magnitude of iterations.
+
+In order for the Jacobi method to converge at all, the spectral radius of the iteration matrix must be strictly less than one.
+This is indeed the case.
+However, the eigenvalues of $B$ that are close to one lead to slow convergence overall, while the eigenvalues close to zero are damped rapidly.
 
 The key point to note is that high frequency error components are characterised by the grid scale.
-This can be seen using by expanding the error in terms of the eigenbasis of the Jacobi iteration matrix.
-
-\begin{align}
-	e^{(i)} = B^i e^{(0)} = \sum_{j=1}^{N} c_j \lambda^i \xi_j
-\end{align}
-For large values of $i$,
-The eigenvalues approximately equal to one are damped slowly under iteration.
-This occurs for the eigenvalues for some $j$.
-
-
-To take advantage of this property, we can transfer the residual to a coarse grid.
+Altering the grid scale leads to a shift in the eigenvalues of the matrix, and hence the relative frequency of the error is altered.
+To take advantage of this property, we can transfer the residual of the equation to a coarse grid.
 On this grid, the previously low frequency error components become high frequency errors.
 Performing few Jacobi iterations at this resolution should lead to a rapid reduction in the error.
 Once these iterations have been completed, the solution is transferred back to the fine grid by an interpolation scheme.
@@ -73,33 +62,56 @@ For instance, the multigrid V-cycle may be thought of as a recursive scheme by p
 In this sense, we move from a fine mesh to coarser and coarser grids by restriction until we may solve the system directly.
 Then we move the solution back to the finest level by prolongation until we are at the desired mesh level. 
 
-
-\begin{figure}
-	% Insert figure of error components for initial iteration phases, want to show low frequency errors are not dampened.
-	% Insert figure for how the frequencies decay based on mesh level.
-	\centering
-	\subfloat[][Initial error in the solution.]{\label{fig:error1} \includegraphics[draft]{images/placeholder}}
-	\\
-	\subfloat[][Error in the solution after TODO damped Jacobi iterations.]{\includegraphics[draft]{images/placeholder}}
-	\caption{Plots of the error between the exact and computed solutions to $u''(x)=0$ with boundary conditions $u(0)=u(1)=0$.
-			 Notice here that high frequency errors are damped fast, while low frequencies persist after several iterations.}
-\end{figure}
-
-
-
-\subsection{Multigrid cycles}
-
-Multigrid, as an iterative solver, involves performing cycles to reduce the residual in the problem.
-The multigrid algorithm iteratively applies one of these cycles until a suitable convergence tolerance is reached.
-The most common multigrid cycle is the V-cycle, and besides the two-grid method, it is the simplest to implement.
-However there are many more cycles, each of which is a variation of the basic two-grid algorithm.
-For example, other cycles include the W-cycle, F-cycle, and S-cycles.
-
 Figure \ref{fig:mgcycles} shows a representation of how a single iteration of different cycles are applied.
 The cycle begins on the first mesh.
 Arrows pointing up indicate a prolongation to a finer mesh, and pointing down, a restriction to a coarser mesh.
 On each mesh, smoothing is also performed.
 A discussion of each of these components of the multigrid algorithm now follows.
+
+
+\begin{figure}
+	% Insert figure of error components for initial iteration phases, want to show low frequency errors are not dampened.
+	% Insert figure for how the frequencies decay based on mesh level.
+	\centering
+	\subfloat[][Initial error in the solution.]{\label{fig:error1}
+		\begin{tikzpicture}
+        \centering
+        \begin{axis}[
+        xlabel={$x$},
+        ylabel={$u(x)$},
+        grid=major,
+        width=0.7\textwidth,
+		xmin=0,xmax=1,
+		ymin=0,ymax=1
+        ]
+        
+        \addplot [color=black, mark=x] table [x index=0, y index=1] {data/plot1.dat};
+
+        \end{axis}
+        \end{tikzpicture}
+	}
+	\\
+	\subfloat[][Error in the solution after 20 Jacobi iterations.]{
+		\label{fig:error2}
+		\begin{tikzpicture}
+		\centering
+		\begin{axis}[
+		xlabel={$x$},
+		ylabel={$u(x)$},
+		grid=major,
+		width=0.7\textwidth,
+		xmin=0,xmax=1,
+		ymin=0,ymax=1
+		]
+		
+		\addplot [color=black, mark=x] table [x index=0, y index=1] {data/plot2.dat};
+
+		\end{axis}
+		\end{tikzpicture}
+	}
+	\caption{Plots of the error between the exact and computed solutions to $u''(x)=0$ with boundary conditions $u(0)=u(1)=0$.}
+\end{figure}
+
 
 
 \begin{figure}[h]
@@ -206,14 +218,10 @@ In our case, this is GMRES, however any appropriate iterative solver will be suf
 Smoothing is not used to solve the problem, although on its own the smoother may be used as a convergent iterative solver.
 Instead, the purpose is to reduce the high frequency errors of the solution on the current grid level.
 As mentioned earlier, this is the key idea to multigrid algorithms.
-Smoothing is typically done by a SOR method, such as the weighted Jacobi or Gauss-Seidel methods.
 
 There are two opportunities to perform smoothing operations.
 These occur before the restriction to the coarser level (pre-smoothing), then again after the coarse grid correction is applied to the solution on the finer level (post-smoothing).
 Different multigrid cycles apply different rules to smoothing, such as when to smooth and how many smoothing iterations to perform.
-For example, in the case of a V or W-cycle, both pre-smoothing and post-smoothing are performed.
-However, in the case of an S-cycle, no pre-smoothing operations are performed, and only post-smoothing is applied.
-For certain problems, this can improve performance because of the reduction of the smoothing operations \cite{iyengar}.
 
 The particular choice of smoother in \oomph is between the complex damped Jacobi method and GMRES.
 Alternatively, one could choose to implement their own smoother to override the default behaviour.
@@ -290,6 +298,7 @@ Figure \ref{fig:pro_res_ops} is a representation of how the transfer matrices ac
 The transfer operators are all created in the setup phase for multigrid, and can be created once the meshes have been generated.
 Two transfer operators are required for each mesh level, except for on the finest and coarsest levels.
 In these cases, a restriction for the coarsest level and a prolongation for the finest level are not needed.
+
 For each possible level of refinement, we create a prolongation matrix.
 Consider a given level of refinement and call the mesh at this level the coarse mesh and the one at the next level the fine mesh.
 Loop over all of the elements in the fine mesh, and then for each node in the element, compute the contribution to the matrix that the node takes from its position in the coarse mesh.
