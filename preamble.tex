@@ -1,12 +1,11 @@
-\title{The Full Thesis Title should appear here}
+\title{Finite-element-based solution of the Fourier-decomposed Helmholtz equation using a multigrid preconditioner}
 \author{William Weir}
-% Faculty of Life Sciences people should comment the next line out
 \school{Mathematics}
 \faculty{Engineering and Physical Sciences}
 \def\wordcount{xxxxx}
 
 % Uncomment the line below to suppress the `List of Tables' page (optional)
-\tablespagefalse
+% \tablespagefalse
 
 % Uncomment the line below to suppress the `List of Figures' page (optional)
 %\figurespagefalse
@@ -18,11 +17,19 @@
 
 % Abstract
 
-The solution to the Helmholtz equation is... 
+The Helmholtz equation arises in many contexts of several industries.
+Since waves feature in electromagnetism, acoustics, and many other fields, any general work has wide application.
+Therefore there is much need for a fast and efficient solver for this problem.
 
-Multigrid is an optimal solver for 
+Multigrid is an optimal solver applied to the discretisation of elliptic PDEs.
+This class of equations includes the Poisson equation.
+However, multigrid faces issues with the related Helmholtz equation in cylindrical coordinates.
+For example, large values of the wavenumber cause the discretisation matrix to become indefinite.
+This has largely been overcome by introducing a shift into the complex plane and using a multigrid preconditioner for an outer Krylov method.
 
-This work extends existing...
+This project extends existing work on the Cartesian multigrid solver for the Helmholtz equation.
+We achieve this by the implementation of the solver for the Fourier decomposed Helmholtz equation in cylindrical coordinates.
+We present convergence results to aid in a comparison between our solver and the Cartesian solver for several related problems.
 
 \afterabstract
 
@@ -36,4 +43,3 @@ Thank you for taking the time to talk through the many problems that I came up a
 
 Finally, I am grateful for all of the interesting discussions and biscuits at the Monday afternoon \texttt{oomph-lib} lunches.
 These have introduced me to a wide range of topics that I would otherwise have not had access to.
-
