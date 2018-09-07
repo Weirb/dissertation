@@ -188,43 +188,48 @@ This holds true for both values of $N$ that were tested.
     \centering
     
     % Plot of the solution
-    \subfloat[][Multigrid computed solution of the Helmholtz equation for $k^2=100$ and $N=5$.]{
+    \subfloat[][Real part of the multigrid computed solution to the Helmholtz equation for $k^2=5$ and $N=5$.]{
         \label{fig:solution}
-        \includegraphics[width=\figwidth]{images/placeholder}
+        \includegraphics[width=0.6\columnwidth]{images/soln_real}
     }
-
-    % Plot of the error
-    \subfloat[][Error behaviour between the exact and computed solution by multigrid for the Helmholtz problem with $k^2=100$ and $N=5$. ]{
-        \label{fig:sol_error}
-        
-        \begin{tikzpicture}
-        \begin{loglogaxis}[
-        xlabel={Relative element width},
-        ylabel={Error},
-        xmin=0.01, xmax=1.1,
-        grid=major,
-        width=\figwidth
-        ]
-        
-        % Plot the data
-        % \addplot [color=red, mark=x] table {\helmholtzfolder/error.dat};
-
-        Calculate gradient, draw the triangle
-        \addplot[color=\mgcol, mark=x] table[y={create col/linear regression={y=1}}] {\helmholtzfolder/error.dat} 
-        coordinate [pos=0.8] (A)
-        coordinate [pos=0.3] (B);
-        \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
-        \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
-        node [pos=0.25, anchor=south] {1} % label the horizontal line
-        node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
-        ;
-
-        \end{loglogaxis}
-        \end{tikzpicture}
+    \\
+    \subfloat[][Imaginary part of the multigrid computed solution to the Helmholtz equation for $k^2=5$ and $N=5$.]{
+        \label{fig:solution}
+        \includegraphics[width=0.6\columnwidth]{images/soln_imag}
     }
     \caption{Plot of the computed solution using multigrid and the corresponding log-log plot of the error between the exact and computed solutions for multiple levels of refinement.}
 \end{figure}
 
+
+\begin{figure}
+    \centering
+        
+    \begin{tikzpicture}
+    \begin{loglogaxis}[
+    xlabel={Relative element width},
+    ylabel={Error},
+    xmin=0.01, xmax=1.1,
+    grid=major,
+    width=\figwidth
+    ]
+    
+    % Plot the data
+    % \addplot [color=red, mark=x] table {\helmholtzfolder/error.dat};
+
+    % Calculate gradient, draw the triangle
+    \addplot[color=\mgcol, mark=x] table[y={create col/linear regression={y=1}}] {\helmholtzfolder/error.dat} 
+    coordinate [pos=0.8] (A)
+    coordinate [pos=0.3] (B);
+    \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
+    \draw (B) -| (A)  % draw the opposite and adjacent sides of the triangle
+    node [pos=0.25, anchor=south] {1} % label the horizontal line
+    node [pos=0.75,anchor=east] {\pgfmathprintnumber{\slope}} %label the vertical line
+    ;
+    \end{loglogaxis}
+    \end{tikzpicture}
+
+    \caption{\label{fig:sol_error} Error behaviour between the exact and computed solution by multigrid for the Helmholtz problem with $k^2=5$ and $N=5$.}
+\end{figure}
 
 % ----------------------------
 % TIMING PLOTS
