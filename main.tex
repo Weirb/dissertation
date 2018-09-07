@@ -8,6 +8,7 @@
 \usepackage{subfig}
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
+\usepackage{listings}
 
 \pgfplotsset{compat=1.5.1}
 
@@ -27,6 +28,30 @@
 \newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 \newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+% Code style
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\lstset{language=C++}
+\lstset{frame=bt,
+  language=C++,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily\linespread{0.7}},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=false,
+  tabsize=4,
+  captionpos=b,
+  keepspaces=true,
+  showspaces=false,
+  showtabs=false
+}
 
 
 \ifdefined\only
@@ -50,5 +75,18 @@
 \bibliography{bibliography}
 \bibliographystyle{plain}
 
+\appendix
+\chapter{Code listings}
+
+This code has been adapted from existing sources within the \oomph codebase.
+For a complete directory of code, consult the \oomph repository at the website \cite{oomph}.
+The changes included here are those necessary for this project.
+
+\section{Driver code}
+\lstinputlisting[language=C++,caption=Filename: main.cc. Driver code containing main entry point to the program.]{../oomph/user_drivers/billy/main.cc}
+
+\clearpage
+\section{Element code}
+\lstinputlisting[language=C++,caption=Filename: refineable\_pml\_helmholtz\_elements.cc. Element code for the refineable version of the Fourier decomposed Helmholtz equation.]{../oomph/user_drivers/billy/SourceFiles/refineable_pml_helmholtz_elements.cc}
 
 \end{document}
